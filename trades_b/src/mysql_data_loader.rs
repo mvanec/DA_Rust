@@ -9,12 +9,10 @@ pub struct MySqlDataLoader {
 
 impl MySqlDataLoader {
     pub fn new(url: String, user: String, password: String, db: String) -> Self {
-        let pool = mysql::Pool::new(OptsBuilder::new()
-        .ip_or_hostname(Some(url))
-        .user(Some(user))
-        .pass(Some(password))
-        .db_name(Some(db))
-        .into()).unwrap();
+        let url = format!("mysql://{}:{}@{}/{}", user, password, url, db);
+        // println!("URL: {}", url);
+        let opts = mysql::Opts::from_url(&url).unwrap();
+        let pool = mysql::Pool::new(opts).unwrap();
         Self { pool }
     }
 }
