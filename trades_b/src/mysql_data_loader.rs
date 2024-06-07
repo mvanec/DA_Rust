@@ -9,7 +9,12 @@ pub struct MySqlDataLoader {
 
 impl MySqlDataLoader {
     pub fn new(url: String, user: String, password: String, db: String) -> Self {
-        let pool = mysql::Pool::new(format!("mysql://{}:{}@{}/{}", user, password, url, db)).unwrap();
+        let pool = mysql::Pool::new(OptsBuilder::new()
+        .ip_or_hostname(Some(url))
+        .user(Some(user))
+        .pass(Some(password))
+        .db_name(Some(db))
+        .into()).unwrap();
         Self { pool }
     }
 }
@@ -18,7 +23,7 @@ impl DataLoader for MySqlDataLoader {
     fn load_trades(&self) -> Vec<Trade> {
         let mut conn = self.pool.get_conn().unwrap();
 
-        let trades: Vec<Trade> = conn.query_map(
+        let mut trades: Vec<Trade> = conn.query_map(
             "SELECT TradeID, Symbol, OpenDate, CloseDate, BrokerID, ExchangeID, RealizedGain FROM trades",
             |(trade_id, symbol, open_date, close_date, broker_id, exchange_id, realized_gain)| Trade {
                 trade_id,
