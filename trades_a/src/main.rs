@@ -27,7 +27,15 @@ impl fmt::Display for Trade {
 }
 
 fn main() {
-    let trades = load_test_data();
+    let csv_data_loader = CsvDataLoader::new(
+        "trades.csv".to_string(),
+        "trade_executions.csv".to_string(),
+        "options_details.csv".to_string(),
+    );
+
+    let trade_factory = TradeFactory::new(Box::new(csv_data_loader));
+
+    let trades = trade_factory.load_trades();
 
     for trade in trades {
         println!("{}", trade);

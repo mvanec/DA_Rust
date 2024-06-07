@@ -1,6 +1,7 @@
 // models.rs
+use serde::Deserialize;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Trade {
     pub trade_id: i32,
     pub symbol: String,
@@ -12,7 +13,7 @@ pub struct Trade {
     pub executions: Vec<TradeExecution>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct TradeExecution {
     pub execution_id: i32,
     pub trade_id: i32,
@@ -28,7 +29,7 @@ pub struct TradeExecution {
     pub options: Vec<OptionDetail>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct OptionDetail {
     pub option_id: i32,
     pub execution_id: i32,
