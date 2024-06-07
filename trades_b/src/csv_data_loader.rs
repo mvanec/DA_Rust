@@ -57,14 +57,14 @@ impl DataLoader for CsvDataLoader {
         for trade in &mut trades {
             trade.executions = trade_executions
                 .iter()
-                .filter(|te| te.TradeID == trade.TradeID)
+                .filter(|te| te.trade_id == trade.trade_id)
                 .cloned()
                 .collect();
 
             for execution in &mut trade.executions {
                 execution.options = options_details
                     .iter()
-                    .filter(|od| od.ExecutionID == execution.ExecutionID)
+                    .filter(|od| od.execution_id == execution.execution_id)
                     .cloned()
                     .collect();
             }
