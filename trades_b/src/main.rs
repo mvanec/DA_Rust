@@ -1,11 +1,9 @@
 // main.rs
 mod models;
 mod factory;
-mod data_loader;
 
 use models::*;
 use factory::*;
-use data_loader::*;
 
 use std::fmt;
 
@@ -29,14 +27,15 @@ impl fmt::Display for Trade {
 }
 
 fn main() {
-
     let csv_data_loader = CsvDataLoader::new(
         "trades.csv".to_string(),
         "trade_executions.csv".to_string(),
         "options_details.csv".to_string(),
     );
 
-    let trades = load_and_transform_data(Box::new(csv_data_loader));
+    let trade_factory = TradeFactory::new(Box::new(csv_data_loader));
+
+    let trades = trade_factory.load_trades();
 
     for trade in trades {
         println!("{}", trade);
