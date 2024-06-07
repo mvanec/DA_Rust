@@ -1,0 +1,11 @@
+[package]
+name = "a_csv_read"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+regex = "1.7.0"
+csv = "1.1.6"
+chrono = "0.4.23"
+prettytable = "0.10.0"
+getopts = "0.2.21"  # Replace with the latest version available at the time
