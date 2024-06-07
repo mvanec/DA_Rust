@@ -28,7 +28,7 @@ impl DataLoader for CsvDataLoader {
             .unwrap();
 
         for trade in trades_reader.deserialize() {
-            let trade: Trade = trade.unwrap();
+            let trade: Trade = trade.expect("Error deserializing trade");
             trades.push(trade);
         }
 

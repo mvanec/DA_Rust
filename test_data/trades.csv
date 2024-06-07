@@ -1,3 +1,3 @@
 TradeID,Symbol,OpenDate,CloseDate,BrokerID,ExchangeID,RealizedGain
 1,AAPL,2022-01-01,2022-01-15,1,1,100.00
-2,TSLA,2022-02-01,,2,2,,
+2,TSLA,2022-02-01,,2,2,
