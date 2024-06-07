@@ -1,5 +1,4 @@
 // models.rs
-use std::collections::VecDeque;
 
 #[derive(Debug)]
 pub struct Trade {

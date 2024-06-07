@@ -1,48 +1,60 @@
-// factory.rs
-use crate::models::*;
+use csv::ReaderBuilder;
+use std::error::Error;
 
-pub fn load_test_data() -> Vec<Trade> {
+pub fn load_test_data() -> Result<Vec<Trade>, Box<dyn Error>> {
     let mut trades = Vec::new();
 
-    let mut trade_executions = Vec::new();
-    let mut option_details = Vec::new();
+    let mut rdr = ReaderBuilder::new().from_path("trades.csv")?;
+    for result in rdr.deserialize() {
+        let (trade_id, symbol, open_date, close_date, broker_id, exchange_id, realized_gain): (i32, String, String, Option<String>, i32, i32, Option<f64>) = result?;
+        trades.push(Trade {
+            trade_id,
+            symbol,
+            open_date,
+            close_date,
+            broker_id,
+            exchange_id,
+            realized_gain,
+            executions: Vec::new(),
+        });
+    }
 
-    option_details.push(OptionDetail {
-        option_id: 1,
-        execution_id: 1,
-        expiration: "2024-06-30".to_string(),
-        strike: 100.0,
-        option_type: "CALL".to_string(),
-        quantity: 10,
-        premium: 10.0,
-        opra: "OPRA1".to_string(),
-    });
+    let mut rdr = ReaderBuilder::new().from_path("trade_executions.csv")?;
+    for result in rdr.deserialize() {
+        let (execution_id, trade_id, execution_date_time, spread, quantity, position_effect, order_price, fill_price, commission, fees, reference_number): (i32, i32, String, String, i32, String, f64, f64, f64, f64, String) = result?;
+        let trade = trades.iter_mut().find(|trade| trade.trade_id == trade_id).unwrap();
+        trade.executions.push(TradeExecution {
+            execution_id,
+            trade_id,
+            execution_date_time,
+            spread,
+            quantity,
+            position_effect,
+            order_price,
+            fill_price,
+            commission,
+            fees,
+            reference_number,
+            options: Vec::new(),
+        });
+    }
 
-    trade_executions.push(TradeExecution {
-        execution_id: 1,
-        trade_id: 1,
-        execution_date_time: "2024-06-07 12:00:00".to_string(),
-        spread: "0.01".to_string(),
-        quantity: 10,
-        position_effect: "Open".to_string(),
-        order_price: 100.0,
-        fill_price: 100.0,
-        commission: 10.0,
-        fees: 10.0,
-        reference_number: "Ref1".to_string(),
-        options: option_details,
-    });
+    let mut rdr = ReaderBuilder::new().from_path("options_details.csv")?;
+    for result in rdr.deserialize() {
+        let (option_id, execution_id, expiration, strike, option_type, quantity, premium, opra): (i32, i32, String, f64, String, i32, f64, String) = result?;
+        let trade = trades.iter_mut().find(|trade| trade.executions.iter().any(|execution| execution.execution_id == execution_id)).unwrap();
+        let execution = trade.executions.iter_mut().find(|execution| execution.execution_id == execution_id).unwrap();
+        execution.options.push(OptionDetail {
+            option_id,
+            execution_id,
+            expiration,
+            strike,
+            option_type,
+            quantity,
+            premium,
+            opra,
+        });
+    }
 
-    trades.push(Trade {
-        trade_id: 1,
-        symbol: "AAPL".to_string(),
-        open_date: "2024-06-07".to_string(),
-        close_date: None,
-        broker_id: 1,
-        exchange_id: 1,
-        realized_gain: None,
-        executions: trade_executions,
-    });
-
-    trades
+    Ok(trades)
 }

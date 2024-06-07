@@ -1,0 +1,4 @@
+ExecutionID,TradeID,ExecutionDateTime,Spread,Quantity,PositionEffect,OrderPrice,FillPrice,Commission,Fees,ReferenceNumber
+1,1,2022-01-01 10:00:00,STOCK,100,Open,100.00,100.00,5.00,0.50,ABC123
+2,1,2022-01-15 11:00:00,STOCK,100,Close,120.00,120.00,5.00,0.50,DEF456
+3,2,2022-02-01 12:00:00,Vertical Debit,1,Open,10.00,10.00,1.00,0.10,GHI789

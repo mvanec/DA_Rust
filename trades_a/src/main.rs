@@ -13,17 +13,13 @@ impl fmt::Display for Trade {
                  self.trade_id, self.symbol, self.open_date, self.broker_id, self.exchange_id, self.realized_gain.unwrap_or(0.0))?;
 
         for execution in &self.executions {
-            writeln!(f, "| {:^10} | {:^10} | {:^10} | {:^10} | {:^10} | {:^10} |",
-                     " ", " ", " ", " ", " ", " ")?;
-
-            writeln!(f, "| {:^10} | {:^10} | {:^10} | {:^10} | {:^10} | {:^10} |",
+            writeln!(f, "|            |            |            |            |            |            |")?;
+            writeln!(f, "|    {:^8} | {:^19} | {:^10} | {:^10} | {:^10} | {:^10} |",
                      execution.execution_id, execution.execution_date_time, execution.quantity, execution.order_price, execution.fill_price, execution.commission)?;
 
             for option in &execution.options {
-                writeln!(f, "| {:^10} | {:^10} | {:^10} | {:^10} | {:^10} | {:^10} |",
-                         " ", " ", " ", " ", " ", " ")?;
-
-                writeln!(f, "| {:^10} | {:^10} | {:^10} | {:^10} | {:^10} | {:^10} |",
+                writeln!(f, "|            |            |            |            |            |            |")?;
+                writeln!(f, "|        {:^8} | {:^10} | {:^10} | {:^10} | {:^10} | {:^10} |",
                          option.option_id, option.expiration, option.quantity, option.strike, option.option_type, option.premium)?;
             }
         }
