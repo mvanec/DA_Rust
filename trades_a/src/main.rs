@@ -1,8 +1,12 @@
 // main.rs
 mod models;
+mod data_loader;
+mod csv_data_loader;
 mod factory;
 
 use models::*;
+use data_loader::DataLoader;
+use csv_data_loader::CsvDataLoader;
 use factory::*;
 
 use std::fmt;
