@@ -4,6 +4,7 @@ mod factory;
 
 use models::*;
 use factory::*;
+
 use std::fmt;
 
 impl fmt::Display for Trade {
