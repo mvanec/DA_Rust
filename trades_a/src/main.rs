@@ -7,8 +7,8 @@ mod mysql_data_loader;
 
 use models::*;
 use factory::*;
-use csv_data_loader::CsvDataLoader;
-use mysql_data_loader::MysqlDataLoader;
+// use csv_data_loader::CsvDataLoader;
+use mysql_data_loader::MySqlDataLoader;
 
 use std::fmt;
 
@@ -39,9 +39,14 @@ fn main() {
     // );
     // let trade_factory = TradeFactory::new(Box::new(csv_data_loader));
 
-    let mysql_data_loader = MysqlDataLoader::new("localhost:3306", "data", "dataannotation", "dataannotation");
-    let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
+    let mysql_data_loader = MySqlDataLoader::new(
+        "localhost:3306".to_string(),
+        "data".to_string(),
+        "dataannotation".to_string(),
+        "dataannotation".to_string(),
+    );
 
+    let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
     let trades = trade_factory.load_trades();
 
     for trade in trades {

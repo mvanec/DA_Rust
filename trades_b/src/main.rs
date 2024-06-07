@@ -7,7 +7,7 @@ mod mysql_data_loader;
 
 use models::*;
 use factory::*;
-use csv_data_loader::CsvDataLoader;
+// use csv_data_loader::CsvDataLoader;
 use mysql_data_loader::MySqlDataLoader;
 
 use std::fmt;
