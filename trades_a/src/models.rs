@@ -3,40 +3,40 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Trade {
-    pub trade_id: i32,
-    pub symbol: String,
-    pub open_date: String,
-    pub close_date: Option<String>,
-    pub broker_id: i32,
-    pub exchange_id: i32,
-    pub realized_gain: Option<f64>,
+    pub TradeID: i32,
+    pub Symbol: String,
+    pub OpenDate: String,
+    pub CloseDate: Option<String>,
+    pub BrokerID: i32,
+    pub ExchangeID: i32,
+    pub RealizedGain: Option<f64>,
     pub executions: Vec<TradeExecution>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct TradeExecution {
-    pub execution_id: i32,
-    pub trade_id: i32,
-    pub execution_date_time: String,
-    pub spread: String,
-    pub quantity: i32,
-    pub position_effect: String,
-    pub order_price: f64,
-    pub fill_price: f64,
-    pub commission: f64,
-    pub fees: f64,
-    pub reference_number: String,
+    pub ExecutionID: i32,
+    pub TradeID: i32,
+    pub ExecutionDateTime: String,
+    pub Spread: String,
+    pub Quantity: i32,
+    pub PositionEffect: String,
+    pub OrderPrice: f64,
+    pub FillPrice: f64,
+    pub Commission: f64,
+    pub Fees: f64,
+    pub ReferenceNumber: String,
     pub options: Vec<OptionDetail>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct OptionDetail {
-    pub option_id: i32,
-    pub execution_id: i32,
-    pub expiration: String,
-    pub strike: f64,
-    pub option_type: String,
-    pub quantity: i32,
-    pub premium: f64,
-    pub opra: String,
+    pub OptionID: i32,
+    pub ExecutionID: i32,
+    pub Expiration: String,
+    pub Strike: f64,
+    pub Type: String,
+    pub Quantity: i32,
+    pub Premium: f64,
+    pub Opra: String,
 }
