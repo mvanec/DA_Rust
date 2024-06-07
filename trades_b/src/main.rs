@@ -3,10 +3,12 @@ mod models;
 mod factory;
 mod data_loader;
 mod csv_data_loader;
+mod mysql_data_loader;
 
 use models::*;
 use factory::*;
 use csv_data_loader::CsvDataLoader;
+use mysql_data_loader::MySqlDataLoader;
 
 use std::fmt;
 
@@ -30,14 +32,21 @@ impl fmt::Display for Trade {
 }
 
 fn main() {
-    let csv_data_loader = CsvDataLoader::new(
-        "W:\\DataAnnotation\\Rust\\test_data\\trades.csv".to_string(),
-        "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv".to_string(),
-        "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv".to_string()
+    // let csv_data_loader = CsvDataLoader::new(
+    //     "W:\\DataAnnotation\\Rust\\test_data\\trades.csv".to_string(),
+    //     "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv".to_string(),
+    //     "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv".to_string()
+    // );
+    // let trade_factory = TradeFactory::new(Box::new(csv_data_loader));
+
+    let mysql_data_loader = MySqlDataLoader::new(
+        "localhost:3306".to_string(),
+        "data".to_string(),
+        "dataannotation".to_string(),
+        "dataannotation".to_string(),
     );
 
-    let trade_factory = TradeFactory::new(Box::new(csv_data_loader));
-
+    let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
     let trades = trade_factory.load_trades();
 
     for trade in trades {
