@@ -1,60 +1,98 @@
-use csv::ReaderBuilder;
-use std::error::Error;
-
-pub fn load_test_data() -> Result<Vec<Trade>, Box<dyn Error>> {
+// factory.rs
+// Load test data from CSV
+pub fn load_test_data() -> Vec<Trade> {
     let mut trades = Vec::new();
 
-    let mut rdr = ReaderBuilder::new().from_path("trades.csv")?;
-    for result in rdr.deserialize() {
-        let (trade_id, symbol, open_date, close_date, broker_id, exchange_id, realized_gain): (i32, String, String, Option<String>, i32, i32, Option<f64>) = result?;
-        trades.push(Trade {
-            trade_id,
-            symbol,
-            open_date,
-            close_date,
-            broker_id,
-            exchange_id,
-            realized_gain,
-            executions: Vec::new(),
-        });
-    }
+    let trade1_executions = vec![
+        TradeExecution {
+            execution_id: 1,
+            trade_id: 1,
+            execution_date_time: "2022-01-01 10:00:00".to_string(),
+            spread: "STOCK".to_string(),
+            quantity: 100,
+            position_effect: "Open".to_string(),
+            order_price: 100.0,
+            fill_price: 100.0,
+            commission: 5.0,
+            fees: 0.5,
+            reference_number: "ABC123".to_string(),
+            options: vec![],
+        },
+        TradeExecution {
+            execution_id: 2,
+            trade_id: 1,
+            execution_date_time: "2022-01-15 11:00:00".to_string(),
+            spread: "STOCK".to_string(),
+            quantity: 100,
+            position_effect: "Close".to_string(),
+            order_price: 120.0,
+            fill_price: 120.0,
+            commission: 5.0,
+            fees: 0.5,
+            reference_number: "DEF456".to_string(),
+            options: vec![],
+        },
+    ];
 
-    let mut rdr = ReaderBuilder::new().from_path("trade_executions.csv")?;
-    for result in rdr.deserialize() {
-        let (execution_id, trade_id, execution_date_time, spread, quantity, position_effect, order_price, fill_price, commission, fees, reference_number): (i32, i32, String, String, i32, String, f64, f64, f64, f64, String) = result?;
-        let trade = trades.iter_mut().find(|trade| trade.trade_id == trade_id).unwrap();
-        trade.executions.push(TradeExecution {
-            execution_id,
-            trade_id,
-            execution_date_time,
-            spread,
-            quantity,
-            position_effect,
-            order_price,
-            fill_price,
-            commission,
-            fees,
-            reference_number,
-            options: Vec::new(),
-        });
-    }
+    let trade2_executions = vec![
+        TradeExecution {
+            execution_id: 3,
+            trade_id: 2,
+            execution_date_time: "2022-02-01 12:00:00".to_string(),
+            spread: "Vertical Debit".to_string(),
+            quantity: 1,
+            position_effect: "Open".to_string(),
+            order_price: 10.0,
+            fill_price: 10.0,
+            commission: 1.0,
+            fees: 0.1,
+            reference_number: "GHI789".to_string(),
+            options: vec![
+                OptionDetail {
+                    option_id: 1,
+                    execution_id: 3,
+                    expiration: "2022-03-18".to_string(),
+                    strike: 800.0,
+                    option_type: "CALL".to_string(),
+                    quantity: 1,
+                    premium: 10.0,
+                    opra: "TSLA210319C00800000".to_string(),
+                },
+                OptionDetail {
+                    option_id: 2,
+                    execution_id: 3,
+                    expiration: "2022-03-18".to_string(),
+                    strike: 820.0,
+                    option_type: "CALL".to_string(),
+                    quantity: -1,
+                    premium: 5.0,
+                    opra: "TSLA210319C00820000".to_string(),
+                },
+            ],
+        },
+    ];
 
-    let mut rdr = ReaderBuilder::new().from_path("options_details.csv")?;
-    for result in rdr.deserialize() {
-        let (option_id, execution_id, expiration, strike, option_type, quantity, premium, opra): (i32, i32, String, f64, String, i32, f64, String) = result?;
-        let trade = trades.iter_mut().find(|trade| trade.executions.iter().any(|execution| execution.execution_id == execution_id)).unwrap();
-        let execution = trade.executions.iter_mut().find(|execution| execution.execution_id == execution_id).unwrap();
-        execution.options.push(OptionDetail {
-            option_id,
-            execution_id,
-            expiration,
-            strike,
-            option_type,
-            quantity,
-            premium,
-            opra,
-        });
-    }
+    trades.push(Trade {
+        trade_id: 1,
+        symbol: "AAPL".to_string(),
+        open_date: "2022-01-01".to_string(),
+        close_date: Some("2022-01-15".to_string()),
+        broker_id: 1,
+        exchange_id: 1,
+        realized_gain: Some(100.0),
+        executions: trade1_executions,
+    });
 
-    Ok(trades)
+    trades.push(Trade {
+        trade_id: 2,
+        symbol: "TSLA".to_string(),
+        open_date: "2022-02-01".to_string(),
+        close_date: None,
+        broker_id: 2,
+        exchange_id: 2,
+        realized_gain: None,
+        executions: trade2_executions,
+    });
+
+    trades
 }
