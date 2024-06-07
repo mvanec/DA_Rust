@@ -31,9 +31,9 @@ impl fmt::Display for Trade {
 
 fn main() {
     let csv_data_loader = CsvDataLoader::new(
-        "trades.csv".to_string(),
-        "trade_executions.csv".to_string(),
-        "options_details.csv".to_string(),
+        "W:\\DataAnnotation\\Rust\\test_data\\trades.csv".to_string(),
+        "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv".to_string(),
+        "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv".to_string()
     );
 
     let trade_factory = TradeFactory::new(Box::new(csv_data_loader));
