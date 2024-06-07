@@ -10,6 +10,7 @@ pub struct Trade {
     pub BrokerID: i32,
     pub ExchangeID: i32,
     pub RealizedGain: Option<f64>,
+    #[serde(default)]
     pub executions: Vec<TradeExecution>,
 }
 
@@ -26,6 +27,7 @@ pub struct TradeExecution {
     pub Commission: f64,
     pub Fees: f64,
     pub ReferenceNumber: String,
+    #[serde(default)]
     pub options: Vec<OptionDetail>,
 }
 

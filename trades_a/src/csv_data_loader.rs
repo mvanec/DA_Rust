@@ -28,7 +28,7 @@ impl DataLoader for CsvDataLoader {
             .unwrap();
 
         for trade in trades_reader.deserialize() {
-            let trade: Trade = trade.expect("Error deserializing trade");
+            let trade: Trade = trade.unwrap();
             trades.push(trade);
         }
 
@@ -57,14 +57,14 @@ impl DataLoader for CsvDataLoader {
         for trade in &mut trades {
             trade.executions = trade_executions
                 .iter()
-                .filter(|te| te.trade_id == trade.trade_id)
+                .filter(|te| te.TradeID == trade.TradeID)
                 .cloned()
                 .collect();
 
             for execution in &mut trade.executions {
                 execution.options = options_details
                     .iter()
-                    .filter(|od| od.execution_id == execution.execution_id)
+                    .filter(|od| od.ExecutionID == execution.ExecutionID)
                     .cloned()
                     .collect();
             }
