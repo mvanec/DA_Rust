@@ -1,4 +1,6 @@
 // factory.rs
+use crate::models::*;
+
 // Load test data from CSV
 pub fn load_test_data() -> Vec<Trade> {
     let mut trades = Vec::new();
