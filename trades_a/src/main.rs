@@ -6,6 +6,7 @@ mod csv_data_loader;
 
 use models::*;
 use factory::*;
+use csv_data_loader::CsvDataLoader;
 
 use std::fmt;
 
