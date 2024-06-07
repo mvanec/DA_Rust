@@ -7,7 +7,6 @@ use factory::*;
 
 use std::fmt;
 
-// main.rs
 impl fmt::Display for Trade {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "| {:^5} | {:^6} | {:^10} | {:^5} | {:^5} | {:^10} |",
