@@ -33,7 +33,8 @@ impl fmt::Display for Trade {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     // let csv_data_loader = CsvDataLoader::new(
     //     "W:\\DataAnnotation\\Rust\\test_data\\trades.csv".to_string(),
     //     "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv".to_string(),
@@ -46,10 +47,15 @@ fn main() {
         "data".to_string(),
         "dataannotation".to_string(),
         "dataannotation".to_string(),
-    );
+    ).await;
 
-    let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
-    let trades = trade_factory.load_trades();
+    // let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
+    // let trades = trade_factory.load_trades();
+
+    // for trade in trades {
+    //     println!("{}", trade);
+    // }
+    let trades = mysql_data_loader.load_trades().await;
 
     for trade in trades {
         println!("{}", trade);
