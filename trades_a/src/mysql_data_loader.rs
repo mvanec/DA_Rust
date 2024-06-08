@@ -15,12 +15,15 @@ impl MySqlDataLoader {
         let pool = Pool::new(opts);
         Self { pool }
     }
+}
 
-    pub async fn load_trades(&self) -> Vec<Trade> {
+#[async_trait]
+impl DataLoader for MySqlDataLoader {
+    async fn load_trades(&self) -> Vec<Trade> {
         let mut conn = self.pool.get_conn().await.unwrap();
 
-        let mut trades: Vec<Trade> = conn.query_map(
-            "SELECT TradeID, Symbol, OpenDate, CloseDate, BrokerID, ExchangeID, RealizedGain FROM Trades",
+        let trades: Vec<Trade> = conn.query_map(
+            "SELECT TradeID, Symbol, OpenDate, CloseDate, BrokerID, ExchangeID, RealizedGain FROM trades",
             |(trade_id, symbol, open_date, close_date, broker_id, exchange_id, realized_gain)| Trade {
                 trade_id,
                 symbol,
@@ -33,8 +36,8 @@ impl MySqlDataLoader {
             },
         ).await.unwrap();
 
-        let mut trade_executions: Vec<TradeExecution> = conn.query_map(
-            "SELECT ExecutionID, TradeID, ExecutionDateTime, Spread, Quantity, PositionEffect, OrderPrice, FillPrice, Commission, Fees, ReferenceNumber FROM TradeExecutions",
+        let trade_executions: Vec<TradeExecution> = conn.query_map(
+            "SELECT ExecutionID, TradeID, ExecutionDateTime, Spread, Quantity, PositionEffect, OrderPrice, FillPrice, Commission, Fees, ReferenceNumber FROM trade_executions",
             |(execution_id, trade_id, execution_date_time, spread, quantity, position_effect, order_price, fill_price, commission, fees, reference_number)| TradeExecution {
                 execution_id,
                 trade_id,
@@ -51,8 +54,8 @@ impl MySqlDataLoader {
             },
         ).await.unwrap();
 
-        let mut options_details: Vec<OptionDetail> = conn.query_map(
-            "SELECT OptionID, ExecutionID, Expiration, Strike, Type, Quantity, Premium, Opra FROM OptionsDetails",
+        let options_details: Vec<OptionDetail> = conn.query_map(
+            "SELECT OptionID, ExecutionID, Expiration, Strike, Type, Quantity, Premium, Opra FROM options_details",
             |(option_id, execution_id, expiration, strike, option_type, quantity, premium, opra)| OptionDetail {
                 option_id,
                 execution_id,

@@ -44,18 +44,14 @@ async fn main() {
 
     let mysql_data_loader = MySqlDataLoader::new(
         "localhost:3306".to_string(),
-        "data".to_string(),
-        "dataannotation".to_string(),
-        "dataannotation".to_string(),
+        "user".to_string(),
+        "password".to_string(),
+        "database".to_string(),
     ).await;
 
-    // let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
-    // let trades = trade_factory.load_trades();
+    let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
 
-    // for trade in trades {
-    //     println!("{}", trade);
-    // }
-    let trades = mysql_data_loader.load_trades().await;
+    let trades = trade_factory.load_trades().await;
 
     for trade in trades {
         println!("{}", trade);

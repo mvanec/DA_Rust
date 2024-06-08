@@ -49,13 +49,9 @@ async fn main() {
         "dataannotation".to_string(),
     ).await;
 
-    // let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
-    // let trades = trade_factory.load_trades();
+    let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
 
-    // for trade in trades {
-    //     println!("{}", trade);
-    // }
-    let trades = mysql_data_loader.load_trades().await;
+    let trades = trade_factory.load_trades().await;
 
     for trade in trades {
         println!("{}", trade);

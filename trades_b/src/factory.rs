@@ -11,7 +11,7 @@ impl TradeFactory {
         Self { data_loader }
     }
 
-    pub fn load_trades(&self) -> Vec<Trade> {
-        self.data_loader.load_trades()
+    pub async fn load_trades(&self) -> Vec<Trade> {
+        self.data_loader.load_trades().await
     }
 }
