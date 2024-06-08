@@ -17,7 +17,7 @@ impl MySqlDataLoader {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl DataLoader for MySqlDataLoader {
     async fn load_trades(&self) -> Vec<Trade> {
         let mut conn = self.pool.get_conn().await.unwrap();

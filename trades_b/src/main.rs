@@ -44,9 +44,9 @@ async fn main() {
 
     let mysql_data_loader = MySqlDataLoader::new(
         "localhost:3306".to_string(),
-        "data".to_string(),
-        "dataannotation".to_string(),
-        "dataannotation".to_string(),
+        "user".to_string(),
+        "password".to_string(),
+        "database".to_string(),
     ).await;
 
     let trade_factory = TradeFactory::new(Box::new(mysql_data_loader));
