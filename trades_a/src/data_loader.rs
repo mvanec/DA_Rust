@@ -1,4 +1,5 @@
 // data_loader.rs
+use async_trait::async_trait;
 use crate::models::*;
 
 #[async_trait]

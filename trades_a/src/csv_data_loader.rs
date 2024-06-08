@@ -1,4 +1,5 @@
 // csv_data_loader.rs
+use async_trait::async_trait;
 use crate::data_loader::DataLoader;
 use crate::models::*;
 use csv::ReaderBuilder;
@@ -19,8 +20,9 @@ impl CsvDataLoader {
     }
 }
 
+#[async_trait]
 impl DataLoader for CsvDataLoader {
-    fn load_trades(&self) -> Vec<Trade> {
+    async fn load_trades(&self) -> Vec<Trade> {
         let mut trades = Vec::new();
 
         let mut trades_reader = ReaderBuilder::new()

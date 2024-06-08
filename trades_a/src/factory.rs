@@ -2,12 +2,12 @@
 use crate::data_loader::DataLoader;
 use crate::models::*;
 
-pub struct TradeFactory {
-    data_loader: Box<dyn DataLoader>,
+pub struct TradeFactory<T: DataLoader> {
+    data_loader: T,
 }
 
-impl TradeFactory {
-    pub fn new(data_loader: Box<dyn DataLoader>) -> Self {
+impl<T: DataLoader> TradeFactory<T> {
+    pub fn new(data_loader: T) -> Self {
         Self { data_loader }
     }
 
