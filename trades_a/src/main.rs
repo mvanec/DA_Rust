@@ -7,7 +7,7 @@ mod factory;
 mod models;
 mod mysql_data_loader;
 
-use data_loader::{DataLoaderConfig, DataLoader};
+use data_loader::{DataLoaderConfig, DataLoader, DataLoaderError};
 use csv_data_loader::CsvDataLoader;
 use factory::*;
 use models::*;
@@ -20,37 +20,23 @@ impl fmt::Display for Trade {
         writeln!(
             f,
             "| {:^5} | {:^6} | {:^10} | {:^5} | {:^5} | {:^10} |",
-            self.trade_id,
-            self.symbol,
-            self.open_date,
-            self.broker_id,
-            self.exchange_id,
-            self.realized_gain.unwrap_or(0.0)
+            self.trade_id, self.symbol, self.open_date, self.broker_id, self.exchange_id, self.realized_gain.unwrap_or(0.0)
         )?;
 
         for execution in &self.executions {
             writeln!(
                 f,
                 "    | {:^5} | {:^19} | {:^6} | {:^6} | {:^10} | {:^10} |",
-                execution.execution_id,
-                execution.execution_date_time,
-                execution.quantity,
-                execution.order_price,
-                execution.commission,
-                execution.fees
+                execution.execution_id, execution.execution_date_time, execution.quantity, execution.order_price,
+                execution.commission, execution.fees
             )?;
 
             for option in &execution.options {
                 writeln!(
                     f,
                     "        | {:^5} | {:^10} | {:^6} | {:^10} | {:^5} | {:^10} | {:^20} |",
-                    option.option_id,
-                    option.expiration,
-                    option.quantity,
-                    option.strike,
-                    option.option_type,
-                    option.premium,
-                    option.opra
+                    option.option_id, option.expiration, option.quantity, option.strike,
+                    option.option_type, option.premium, option.opra
                 )?;
             }
         }
@@ -64,31 +50,30 @@ fn run_csv_load() {
         url: "W:\\DataAnnotation\\Rust\\test_data\\trades.csv".to_string(),
         user: "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv".to_string(),
         password: "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv".to_string(),
-        db: "dataannotation".to_string(),
+        db: "".to_string(),
     };
-    // Handle potential errors returned by TradeFactory::new
-    let trade_factory_result = TradeFactory::new(DataLoaderType::Csv, config);
-    match trade_factory_result {
-        Ok(trade_factory) => {
-            let trades = trade_factory.load_trades();
-            match trades {
-                Ok(trades) => {
-                    for trade in trades {
-                        println!("{}", trade);  // Print each trade
-                    }
-                },
-                Err(error) => {
-                    println!("Error loading trades: {:?}", error);  // Handle load_trades error
-                },
+
+    let data_loader = match TradeFactory::new(DataLoaderType::Csv, config) {
+        Ok(loader) => loader,
+        Err(err) => {
+            eprintln!("Error creating data loader with: {}", err);
+            return;
+        }
+    };
+
+    match data_loader.load_trades() {
+        Ok(trades) => {
+            for trade in trades {
+                println!("{}", trade);
             }
-        },
-        Err(error) => {
-            println!("Error creating TradeFactory: {:?}", error);  // Handle factory creation error
-        },
+        }
+        Err(err) => {
+            eprintln!("Error loading trades: {}", err);
+        }
     }
 }
 
-fn main() {
+fn run_mysql_load() {
     let config = DataLoaderConfig {
         url: "127.0.0.1".to_string(),
         user: "data".to_string(),
@@ -96,25 +81,27 @@ fn main() {
         db: "dataannotation".to_string(),
     };
 
-    // Handle potential errors returned by TradeFactory::new
-    let trade_factory_result = TradeFactory::new(DataLoaderType::MySql, config);
-    match trade_factory_result {
-        Ok(trade_factory) => {
-            let trades = trade_factory.load_trades();
-            match trades {
-                Ok(trades) => {
-                    for trade in trades {
-                        println!("{}", trade);  // Print each trade
-                    }
-                },
-                Err(error) => {
-                    println!("Error loading trades: {:?}", error);  // Handle load_trades error
-                },
+    let data_loader = match TradeFactory::new(DataLoaderType::MySql, config) {
+        Ok(loader) => loader,
+        Err(err) => {
+            eprintln!("Error creating data loader with: {}", err);
+            return;
+        }
+    };
+
+    match data_loader.load_trades() {
+        Ok(trades) => {
+            for trade in trades {
+                println!("{}", trade);
             }
-        },
-        Err(error) => {
-            println!("Error creating TradeFactory: {:?}", error);  // Handle factory creation error
-        },
+        }
+        Err(err) => {
+            eprintln!("Error loading trades: {}", err);
+        }
     }
+}
+
+fn main() {
+    run_mysql_load();
     run_csv_load();
 }

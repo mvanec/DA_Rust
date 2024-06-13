@@ -15,17 +15,11 @@ pub struct TradeFactory {
 }
 
 impl TradeFactory {
-    pub fn new(data_loader_type: DataLoaderType, config: DataLoaderConfig) -> Result<Self, DataLoaderError> {
-        let data_loader: Box<dyn DataLoader> = match data_loader_type {
-            DataLoaderType::MySql => Box::new(MySqlDataLoader::new(config)?),
-            DataLoaderType::Csv => Box::new(CsvDataLoader::new(config)?),
+    pub fn new(data_loader_type: DataLoaderType, config: DataLoaderConfig) -> Result<Box<dyn DataLoader>, DataLoaderError> {
+        match data_loader_type {
+            DataLoaderType::MySql => Ok(Box::new(MySqlDataLoader::new(config)?)),
+            DataLoaderType::Csv => Ok(Box::new(CsvDataLoader::new(config)?)),
             // Add more cases as needed
-        };
-
-        Ok(Self { data_loader })
-    }
-
-    pub fn load_trades(&self) -> Result<Vec<Trade>, DataLoaderError> {
-        self.data_loader.load_trades()
+        }
     }
 }
