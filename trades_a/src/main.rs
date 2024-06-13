@@ -59,12 +59,34 @@ impl fmt::Display for Trade {
     }
 }
 
-// let csv_data_loader = CsvDataLoader::new(
-//     "W:\\DataAnnotation\\Rust\\test_data\\trades.csv".to_string(),
-//     "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv".to_string(),
-//     "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv".to_string()
-// );
-// let trade_factory = TradeFactory::new(Box::new(csv_data_loader));
+fn run_csv_load() {
+    let config = DataLoaderConfig {
+        url: "W:\\DataAnnotation\\Rust\\test_data\\trades.csv".to_string(),
+        user: "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv".to_string(),
+        password: "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv".to_string(),
+        db: "dataannotation".to_string(),
+    };
+    // Handle potential errors returned by TradeFactory::new
+    let trade_factory_result = TradeFactory::new(DataLoaderType::Csv, config);
+    match trade_factory_result {
+        Ok(trade_factory) => {
+            let trades = trade_factory.load_trades();
+            match trades {
+                Ok(trades) => {
+                    for trade in trades {
+                        println!("{}", trade);  // Print each trade
+                    }
+                },
+                Err(error) => {
+                    println!("Error loading trades: {:?}", error);  // Handle load_trades error
+                },
+            }
+        },
+        Err(error) => {
+            println!("Error creating TradeFactory: {:?}", error);  // Handle factory creation error
+        },
+    }
+}
 
 fn main() {
     let config = DataLoaderConfig {
@@ -94,4 +116,5 @@ fn main() {
             println!("Error creating TradeFactory: {:?}", error);  // Handle factory creation error
         },
     }
+    run_csv_load();
 }
