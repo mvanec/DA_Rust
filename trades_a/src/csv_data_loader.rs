@@ -12,9 +12,21 @@ pub struct CsvDataLoader {
 impl CsvDataLoader {
     pub fn new(config: DataLoaderConfig) -> Result<Self, DataLoaderError> {
         Ok(Self {
-            trades_path: config.url,
-            trade_executions_path: config.user,
-            options_details_path: config.password,
+            trades_path: config
+                .options
+                .get("trades_file")
+                .unwrap_or(&"".to_string())
+                .clone(),
+            trade_executions_path: config
+                .options
+                .get("trade_executions_file")
+                .unwrap_or(&"".to_string())
+                .clone(),
+            options_details_path: config
+                .options
+                .get("options_details_file")
+                .unwrap_or(&"".to_string())
+                .clone(),
         })
     }
 }
@@ -25,32 +37,34 @@ impl DataLoader for CsvDataLoader {
 
         let mut trades_reader = ReaderBuilder::new()
             .from_path(&self.trades_path)
-            .unwrap();
+            .map_err(|e| DataLoaderError::from(e))?;
 
         for trade in trades_reader.deserialize() {
-            let trade: Trade = trade.unwrap();
+            let trade: Trade = trade.map_err(|e| DataLoaderError::from(e))?;
             trades.push(trade);
         }
 
         let mut trade_executions_reader = ReaderBuilder::new()
             .from_path(&self.trade_executions_path)
-            .unwrap();
+            .map_err(|e| DataLoaderError::from(e))?;
 
         let mut trade_executions: Vec<TradeExecution> = Vec::new();
 
         for trade_execution in trade_executions_reader.deserialize() {
-            let trade_execution: TradeExecution = trade_execution.unwrap();
+            let trade_execution: TradeExecution =
+                trade_execution.map_err(|e| DataLoaderError::from(e))?;
             trade_executions.push(trade_execution);
         }
 
         let mut options_details_reader = ReaderBuilder::new()
             .from_path(&self.options_details_path)
-            .unwrap();
+            .map_err(|e| DataLoaderError::from(e))?;
 
         let mut options_details: Vec<OptionDetail> = Vec::new();
 
         for option_detail in options_details_reader.deserialize() {
-            let option_detail: OptionDetail = option_detail.unwrap();
+            let option_detail: OptionDetail =
+                option_detail.map_err(|e| DataLoaderError::from(e))?;
             options_details.push(option_detail);
         }
 

@@ -1,12 +1,13 @@
 // data_loader.rs
-use std::error::Error;
 use crate::models::*;
+use std::collections::HashMap;
 
 pub struct DataLoaderConfig {
-    pub url: String,
-    pub user: String,
+    pub source: String,
+    pub username: String,
     pub password: String,
-    pub db: String,
+    pub dataset: String,
+    pub options: HashMap<String, String>,
 }
 
 pub trait DataLoader {
@@ -18,6 +19,18 @@ pub enum DataLoaderError {
     DatabaseError(String),
     FileError(String),
     // Add more error types as needed
+}
+
+impl From<mysql::Error> for DataLoaderError {
+    fn from(e: mysql::Error) -> Self {
+        DataLoaderError::DatabaseError(e.to_string())
+    }
+}
+
+impl From<csv::Error> for DataLoaderError {
+    fn from(e: csv::Error) -> Self {
+        DataLoaderError::FileError(e.to_string())
+    }
 }
 
 impl std::error::Error for DataLoaderError {}

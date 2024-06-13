@@ -1,5 +1,4 @@
 use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
-use crate::models::*;
 use crate::csv_data_loader::CsvDataLoader;
 use crate::mysql_data_loader::MySqlDataLoader;
 
@@ -11,7 +10,7 @@ pub enum DataLoaderType {
 }
 
 pub struct TradeFactory {
-    data_loader: Box<dyn DataLoader>,
+
 }
 
 impl TradeFactory {
