@@ -1,12 +1,21 @@
 // data_loader.rs
-use crate::models::*;
 use std::collections::HashMap;
+use serde::Deserialize;
+use crate::factory::DataLoaderType;
+use crate::models::*;
 
+#[derive(Deserialize)]
 pub struct DataLoaderConfig {
+    pub data_loader_type: DataLoaderType,
+    #[serde(default)]
     pub source: String,
+    #[serde(default)]
     pub username: String,
+    #[serde(default)]
     pub password: String,
+    #[serde(default)]
     pub dataset: String,
+    #[serde(default)]
     pub options: HashMap<String, String>,
 }
 

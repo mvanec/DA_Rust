@@ -1,12 +1,15 @@
+use serde::Deserialize;
 use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
 use crate::csv_data_loader::CsvDataLoader;
 use crate::mysql_data_loader::MySqlDataLoader;
 
 
+#[derive(Deserialize, Clone, Copy)]
 pub enum DataLoaderType {
-    MySql,
+    #[serde(rename = "Csv")]
     Csv,
-    // Add more types as needed
+    #[serde(rename = "MySql")]
+    MySql,
 }
 
 pub struct TradeFactory {

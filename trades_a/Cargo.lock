@@ -1509,6 +1509,7 @@ dependencies = [
  "csv",
  "mysql",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

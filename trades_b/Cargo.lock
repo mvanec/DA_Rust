@@ -1507,12 +1507,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "trades_b"
+name = "trades_a"
 version = "0.1.0"
 dependencies = [
  "csv",
  "mysql",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
