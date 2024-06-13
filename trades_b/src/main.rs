@@ -14,7 +14,14 @@ use data_loader::DataLoaderConfig;
 use factory::*;
 
 fn load_config_from_file(path: &str) -> Result<Vec<DataLoaderConfig>, std::io::Error> {
-    let mut file = File::open(Path::new(path))?;
+    let config_path = Path::new(path);
+    if !config_path.exists() {
+        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Config file not found"));
+    }
+    if !config_path.is_file() {
+        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Config path is not a file"));
+    }
+    let mut file = File::open(Path::new(config_path))?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     let configs: Vec<DataLoaderConfig> = match serde_json::from_str(&contents) {

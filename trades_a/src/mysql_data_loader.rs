@@ -1,8 +1,10 @@
 // mysql_data_loader.rs
-use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
-use crate::models::*;
+use secrecy::ExposeSecret;
 use mysql::prelude::*;
 use mysql::{Opts, OptsBuilder, Pool};
+
+use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
+use crate::models::*;
 
 pub struct MySqlDataLoader {
     pool: Pool,
@@ -10,10 +12,11 @@ pub struct MySqlDataLoader {
 
 impl MySqlDataLoader {
     pub fn new(config: DataLoaderConfig) -> Result<Self, DataLoaderError> {
+        let password = config.password.expose_secret();
         let opts: Opts = OptsBuilder::new()
             .ip_or_hostname(Some(config.source))
             .user(Some(config.username))
-            .pass(Some(config.password))
+            .pass(Some(password))
             .db_name(Some(config.dataset))
             .into();
 
