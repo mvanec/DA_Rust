@@ -1,27 +1,30 @@
 // mysql_data_loader.rs
-use async_trait::async_trait;
-use crate::data_loader::DataLoader;
+use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
 use crate::models::*;
-use mysql_async::{Opts, Pool};
-use mysql_async::prelude::*;
+use mysql::{Opts, Pool, OptsBuilder};
+use mysql::prelude::*;
 
 pub struct MySqlDataLoader {
     pool: Pool,
 }
 
 impl MySqlDataLoader {
-    pub async fn new(url: String, user: String, password: String, db: String) -> Self {
-        let url = format!("mysql://{}:{}@{}/{}", user, password, url, db);
-        let opts = Opts::from_url(&url).unwrap();
-        let pool = Pool::new(opts);
-        Self { pool }
+    pub fn new(config: DataLoaderConfig) -> Result<Self, DataLoaderError> {
+        let opts: Opts = OptsBuilder::new()
+            .ip_or_hostname(Some(config.url))
+            .user(Some(config.user))
+            .pass(Some(config.password))
+            .db_name(Some(config.db))
+            .into();
+
+        let pool = Pool::new(opts).map_err(|e| DataLoaderError::DatabaseError(e.to_string()))?;
+        Ok(Self { pool })
     }
 }
 
-#[async_trait]
 impl DataLoader for MySqlDataLoader {
-    async fn load_trades(&self) -> Vec<Trade> {
-        let mut conn = self.pool.get_conn().await.unwrap();
+    fn load_trades(&self) -> Result<Vec<Trade>, DataLoaderError> {
+        let mut conn = self.pool.get_conn().map_err(|e| DataLoaderError::DatabaseError(e.to_string()))?;
 
         let mut trades: Vec<Trade> = conn.query_map(
             "SELECT TradeID, Symbol, OpenDate, CloseDate, BrokerID, ExchangeID, RealizedGain FROM trades",
@@ -35,7 +38,7 @@ impl DataLoader for MySqlDataLoader {
                 realized_gain,
                 executions: Vec::new(),
             },
-        ).await.unwrap();
+        ).unwrap();
 
         let trade_executions: Vec<TradeExecution> = conn.query_map(
             "SELECT ExecutionID, TradeID, ExecutionDateTime, Spread, Quantity, PositionEffect, OrderPrice, FillPrice, Commission, Fees, ReferenceNumber FROM tradeexecutions",
@@ -53,7 +56,7 @@ impl DataLoader for MySqlDataLoader {
                 reference_number,
                 options: Vec::new(),
             },
-        ).await.unwrap();
+        ).unwrap();
 
         let options_details: Vec<OptionDetail> = conn.query_map(
             "SELECT OptionID, ExecutionID, Expiration, Strike, Type, Quantity, Premium, Opra FROM optionsdetails",
@@ -67,7 +70,7 @@ impl DataLoader for MySqlDataLoader {
                 premium,
                 opra,
             },
-        ).await.unwrap();
+        ).unwrap();
 
         for trade in &mut trades {
             trade.executions = trade_executions
@@ -85,6 +88,6 @@ impl DataLoader for MySqlDataLoader {
             }
         }
 
-        trades
+        Ok(trades)
     }
 }

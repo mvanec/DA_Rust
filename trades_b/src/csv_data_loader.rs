@@ -1,6 +1,5 @@
 // csv_data_loader.rs
-use async_trait::async_trait;
-use crate::data_loader::DataLoader;
+use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
 use crate::models::*;
 use csv::ReaderBuilder;
 
@@ -11,18 +10,17 @@ pub struct CsvDataLoader {
 }
 
 impl CsvDataLoader {
-    pub fn new(trades_path: String, trade_executions_path: String, options_details_path: String) -> Self {
-        Self {
-            trades_path,
-            trade_executions_path,
-            options_details_path,
-        }
+    pub fn new(config: DataLoaderConfig) -> Result<Self, DataLoaderError> {
+        Ok(Self {
+            trades_path: config.url,
+            trade_executions_path: config.user,
+            options_details_path: config.password,
+        })
     }
 }
 
-#[async_trait]
 impl DataLoader for CsvDataLoader {
-    async fn load_trades(&self) -> Vec<Trade> {
+    fn load_trades(&self) -> Result<Vec<Trade>, DataLoaderError> {
         let mut trades = Vec::new();
 
         let mut trades_reader = ReaderBuilder::new()
@@ -72,6 +70,6 @@ impl DataLoader for CsvDataLoader {
             }
         }
 
-        trades
+        Ok(trades)
     }
 }
