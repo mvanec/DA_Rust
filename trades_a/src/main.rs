@@ -11,13 +11,15 @@ use log::SetLoggerError;
 use log4rs::Handle;
 use log::LevelFilter;
 
-mod csv_data_loader;
 mod data_loader;
 mod factory;
 mod models;
 mod mysql_data_loader;
+mod csv_data_loader;
+pub mod loadable;
 
 use data_loader::DataLoaderConfig;
+use models::Trade;
 use factory::*;
 
 #[derive(Serialize, Deserialize)]
@@ -37,12 +39,13 @@ fn load_config_from_file(path: &str) -> Result<AppConfig, Box<dyn std::error::Er
         return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Config file not found")));
     }
     let config_str = fs::read_to_string(config_path)?;
-    let config: AppConfig = serde_json::from_str(&config_str)?;
+    let config: AppConfig = serde_json::from_str(&config_str).unwrap();
+
     Ok(config)
 }
 
 fn run_data_load(config: DataLoaderConfig) {
-    let data_loader = match TradeFactory::new(config.data_loader_type, config) {
+    let data_loader = match TradeFactory::new::<Trade>(config.data_loader_type, config) {
         Ok(loader) => loader,
         Err(err) => {
             log::error!("Error creating data loader with: {}", err);
@@ -50,7 +53,7 @@ fn run_data_load(config: DataLoaderConfig) {
         }
     };
 
-    match data_loader.load_trades() {
+    match data_loader.load_data() {
         Ok(trades) => {
             for trade in trades {
                 println!("{}", trade);
@@ -70,7 +73,7 @@ fn initialize_logging(log_file: &String) -> Config {
 
     let log_config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(Root::builder().appender("logfile").build(LevelFilter::Info)).unwrap();
+        .build(Root::builder().appender("logfile").build(LevelFilter::Debug)).unwrap();
 
     log_config
 }

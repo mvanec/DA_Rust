@@ -7,15 +7,19 @@ use std::process;
 use log4rs::append::file::FileAppender;
 use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::pattern::PatternEncoder;
+use log::SetLoggerError;
+use log4rs::Handle;
 use log::LevelFilter;
 
-mod csv_data_loader;
 mod data_loader;
 mod factory;
 mod models;
 mod mysql_data_loader;
+mod csv_data_loader;
+pub mod loadable;
 
 use data_loader::DataLoaderConfig;
+use models::Trade;
 use factory::*;
 
 #[derive(Serialize, Deserialize)]
@@ -35,12 +39,13 @@ fn load_config_from_file(path: &str) -> Result<AppConfig, Box<dyn std::error::Er
         return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Config file not found")));
     }
     let config_str = fs::read_to_string(config_path)?;
-    let config: AppConfig = serde_json::from_str(&config_str)?;
+    let config: AppConfig = serde_json::from_str(&config_str).unwrap();
+
     Ok(config)
 }
 
 fn run_data_load(config: DataLoaderConfig) {
-    let data_loader = match TradeFactory::new(config.data_loader_type, config) {
+    let data_loader = match TradeFactory::new::<Trade>(config.data_loader_type, config) {
         Ok(loader) => loader,
         Err(err) => {
             log::error!("Error creating data loader with: {}", err);
@@ -48,7 +53,7 @@ fn run_data_load(config: DataLoaderConfig) {
         }
     };
 
-    match data_loader.load_trades() {
+    match data_loader.load_data() {
         Ok(trades) => {
             for trade in trades {
                 println!("{}", trade);
@@ -60,10 +65,37 @@ fn run_data_load(config: DataLoaderConfig) {
     }
 }
 
+fn initialize_logging(log_file: &String) -> Config {
+    let logfile = FileAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
+        .build(log_file)
+        .unwrap();
+
+    let log_config = Config::builder()
+        .appender(Appender::builder().build("logfile", Box::new(logfile)))
+        .build(Root::builder().appender("logfile").build(LevelFilter::Debug)).unwrap();
+
+    log_config
+}
+
+fn create_logger(log_config: Config) -> Result<crate::Handle, SetLoggerError> {
+    log4rs::init_config(log_config)
+}
+
 fn main() {
+    // Bootstrap logging
+    let cfg = initialize_logging(&"bootstrap.log".to_string());
+    let handle =  match create_logger(cfg) {
+        Ok(handle) => handle,
+        Err(err) => {
+            eprintln!("Error bootstrapping logger: {:?}", err);
+            process::exit(-1);
+        }
+    };
+
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
-        println!("Usage: {} config_file", args[0]);
+        eprintln!("Usage: {} config_file", args[0]);
         process::exit(1);
     }
     let config_file = &args[1];
@@ -71,21 +103,13 @@ fn main() {
     let config = match load_config_from_file(config_file) {
         Ok(config) => config,
         Err(err) => {
-            println!("Error loading config file: {}", err);
+            log::error!("Error loading config file: {}", err);
             process::exit(1);
         }
     };
-    let logfile = FileAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
-        .build(config.logging.log_file)
-        .unwrap();
 
-    let log_config = Config::builder()
-        .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(Root::builder().appender("logfile").build(LevelFilter::Info))
-        .unwrap();
-
-    log4rs::init_config(log_config).unwrap();
+    let cfg = initialize_logging(&config.logging.log_file);
+    handle.set_config(cfg);
 
     for data_loader_config in config.data_loaders {
         run_data_load(data_loader_config);

@@ -1,11 +1,18 @@
 // data_loader.rs
 use std::collections::HashMap;
+use mysql::Pool;
 use serde::{Serialize, Deserialize};
 use serde_with::{serde_as, DisplayFromStr};
 use secrecy::SecretString;
 
 use crate::factory::DataLoaderType;
-use crate::models::*;
+
+pub trait DataLoader<T> {
+    fn get_pool(&self) -> &Pool;
+    fn load_data(&self) -> Result<Vec<T>, DataLoaderError>;
+    fn get_type(&self) -> String;
+    fn get_options(&self) -> HashMap<String, String>;
+}
 
 #[serde_as]
 #[derive(Serialize, Deserialize)]
@@ -24,14 +31,11 @@ pub struct DataLoaderConfig {
     pub options: HashMap<String, String>,
 }
 
-pub trait DataLoader {
-    fn load_trades(&self) -> Result<Vec<Trade>, DataLoaderError>;
-}
-
 #[derive(Debug)]
 pub enum DataLoaderError {
     DatabaseError(String),
     FileError(String),
+    UnknownSourceError(String),
     // Add more error types as needed
 }
 
@@ -54,6 +58,7 @@ impl std::fmt::Display for DataLoaderError {
         match self {
             DataLoaderError::DatabaseError(msg) => write!(f, "Database error: {}", msg),
             DataLoaderError::FileError(msg) => write!(f, "File error: {}", msg),
+            DataLoaderError::UnknownSourceError(msg) => write!(f, "Error occurred: {}", msg),
             // Add more error types as needed
         }
     }

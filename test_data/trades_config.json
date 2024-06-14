@@ -10,7 +10,7 @@
             "password": "",
             "dataset": "",
             "options": {
-                "trades_file": "W:\\AataAnnotation\\Rust\\test_data\\trades.csv",
+                "trades_file": "W:\\DataAnnotation\\Rust\\test_data\\trades.csv",
                 "trade_executions_file": "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv",
                 "options_details_file": "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv"
             }

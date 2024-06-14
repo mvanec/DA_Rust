@@ -1,15 +1,18 @@
 // csv_data_loader.rs
-use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
-use crate::models::*;
-use csv::ReaderBuilder;
+use std::collections::HashMap;
+use std::marker::PhantomData;
 
-pub struct CsvDataLoader {
+use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
+use crate::loadable::Loadable;
+
+pub struct CsvDataLoader<T> {
     trades_path: String,
     trade_executions_path: String,
     options_details_path: String,
+    _marker: PhantomData<T>,
 }
 
-impl CsvDataLoader {
+impl<T> CsvDataLoader<T> {
     pub fn new(config: DataLoaderConfig) -> Result<Self, DataLoaderError> {
         Ok(Self {
             trades_path: config
@@ -27,63 +30,33 @@ impl CsvDataLoader {
                 .get("options_details_file")
                 .unwrap_or(&"".to_string())
                 .clone(),
+            _marker: PhantomData
         })
     }
 }
 
-impl DataLoader for CsvDataLoader {
-    fn load_trades(&self) -> Result<Vec<Trade>, DataLoaderError> {
-        let mut trades = Vec::new();
+impl<T> DataLoader<T> for CsvDataLoader<T>
+where
+    T: Loadable,
+{
 
-        let mut trades_reader = ReaderBuilder::new()
-            .from_path(&self.trades_path)
-            .map_err(|e| DataLoaderError::from(e))?;
+    fn get_pool(&self) -> &mysql::Pool {
+        todo!()
+    }
 
-        for trade in trades_reader.deserialize() {
-            let trade: Trade = trade.map_err(|e| DataLoaderError::from(e))?;
-            trades.push(trade);
-        }
+    fn load_data(&self) -> Result<Vec<T>, DataLoaderError> {
+        T::load(self)
+    }
 
-        let mut trade_executions_reader = ReaderBuilder::new()
-            .from_path(&self.trade_executions_path)
-            .map_err(|e| DataLoaderError::from(e))?;
+    fn get_type(&self) -> String {
+        return "CSV".to_string();
+    }
 
-        let mut trade_executions: Vec<TradeExecution> = Vec::new();
-
-        for trade_execution in trade_executions_reader.deserialize() {
-            let trade_execution: TradeExecution =
-                trade_execution.map_err(|e| DataLoaderError::from(e))?;
-            trade_executions.push(trade_execution);
-        }
-
-        let mut options_details_reader = ReaderBuilder::new()
-            .from_path(&self.options_details_path)
-            .map_err(|e| DataLoaderError::from(e))?;
-
-        let mut options_details: Vec<OptionDetail> = Vec::new();
-
-        for option_detail in options_details_reader.deserialize() {
-            let option_detail: OptionDetail =
-                option_detail.map_err(|e| DataLoaderError::from(e))?;
-            options_details.push(option_detail);
-        }
-
-        for trade in &mut trades {
-            trade.executions = trade_executions
-                .iter()
-                .filter(|te| te.trade_id == trade.trade_id)
-                .cloned()
-                .collect();
-
-            for execution in &mut trade.executions {
-                execution.options = options_details
-                    .iter()
-                    .filter(|od| od.execution_id == execution.execution_id)
-                    .cloned()
-                    .collect();
-            }
-        }
-
-        Ok(trades)
+    fn get_options(&self) -> HashMap<String, String> {
+        let mut options: HashMap<String, String> = HashMap::new();
+        options.insert("trades_path".to_string(), self.trades_path.clone());
+        options.insert("trade_executions_path".to_string(), self.trade_executions_path.clone());
+        options.insert("options_details_path".to_string(), self.options_details_path.clone());
+        options
     }
 }
