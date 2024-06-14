@@ -25,6 +25,7 @@ use factory::*;
 #[derive(Serialize, Deserialize)]
 struct LoggingConfig {
     log_file: String,
+    log_level: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -65,15 +66,24 @@ fn run_data_load(config: DataLoaderConfig) {
     }
 }
 
-fn initialize_logging(log_file: &String) -> Config {
+fn initialize_logging(logging_config: &LoggingConfig) -> Config {
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
-        .build(log_file)
+        .build(&logging_config.log_file)
         .unwrap();
+
+    let log_level_filter = match logging_config.log_level.to_lowercase().as_str() {
+        "error" => LevelFilter::Error,
+        "warn" => LevelFilter::Warn,
+        "info" => LevelFilter::Info,
+        "debug" => LevelFilter::Debug,
+        "trace" => LevelFilter::Trace,
+        _ => LevelFilter::Info,
+    };
 
     let log_config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(Root::builder().appender("logfile").build(LevelFilter::Debug)).unwrap();
+        .build(Root::builder().appender("logfile").build(log_level_filter)).unwrap();
 
     log_config
 }
@@ -84,7 +94,11 @@ fn create_logger(log_config: Config) -> Result<crate::Handle, SetLoggerError> {
 
 fn main() {
     // Bootstrap logging
-    let cfg = initialize_logging(&"bootstrap.log".to_string());
+    let bootstrap_logging_config = LoggingConfig {
+        log_file: "bootstrap.log".to_string(),
+        log_level: "info".to_string(),
+    };
+    let cfg = initialize_logging(&bootstrap_logging_config);
     let handle =  match create_logger(cfg) {
         Ok(handle) => handle,
         Err(err) => {
@@ -108,7 +122,7 @@ fn main() {
         }
     };
 
-    let cfg = initialize_logging(&config.logging.log_file);
+    let cfg = initialize_logging(&config.logging);
     handle.set_config(cfg);
 
     for data_loader_config in config.data_loaders {
