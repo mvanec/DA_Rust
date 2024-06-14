@@ -1,0 +1,27 @@
+{
+    "logging": {
+        "log_file": "log/output.log"
+    },
+    "data_loaders": [
+        {
+            "data_loader_type": "Csv",
+            "source": "",
+            "username": "",
+            "password": "",
+            "dataset": "",
+            "options": {
+                "trades_file": "W:\\AataAnnotation\\Rust\\test_data\\trades.csv",
+                "trade_executions_file": "W:\\DataAnnotation\\Rust\\test_data\\trade_executions.csv",
+                "options_details_file": "W:\\DataAnnotation\\Rust\\test_data\\options_details.csv"
+            }
+        },
+        {
+            "data_loader_type": "MySql",
+            "source": "127.0.0.1",
+            "username": "data",
+            "password": "dataannotation",
+            "dataset": "dataannotation",
+            "options": {}
+        }
+    ]
+}

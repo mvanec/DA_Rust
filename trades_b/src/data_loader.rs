@@ -1,6 +1,6 @@
 // data_loader.rs
 use std::collections::HashMap;
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use serde_with::{serde_as, DisplayFromStr};
 use secrecy::SecretString;
 
@@ -8,7 +8,7 @@ use crate::factory::DataLoaderType;
 use crate::models::*;
 
 #[serde_as]
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DataLoaderConfig {
     pub data_loader_type: DataLoaderType,
     #[serde(default)]
@@ -16,6 +16,7 @@ pub struct DataLoaderConfig {
     #[serde(default)]
     pub username: String,
     #[serde_as(as = "DisplayFromStr")]
+    #[serde(skip_serializing)]
     pub password: SecretString,
     #[serde(default)]
     pub dataset: String,

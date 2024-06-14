@@ -1,8 +1,15 @@
 // main.rs
+use serde::{Deserialize, Serialize};
 use std::env;
-use std::fs::File;
-use std::io::Read;
+use std::fs;
 use std::path::Path;
+use std::process;
+use log4rs::append::file::FileAppender;
+use log4rs::config::{Appender, Config, Root};
+use log4rs::encode::pattern::PatternEncoder;
+use log::SetLoggerError;
+use log4rs::Handle;
+use log::LevelFilter;
 
 mod csv_data_loader;
 mod data_loader;
@@ -13,29 +20,32 @@ mod mysql_data_loader;
 use data_loader::DataLoaderConfig;
 use factory::*;
 
-fn load_config_from_file(path: &str) -> Result<Vec<DataLoaderConfig>, std::io::Error> {
+#[derive(Serialize, Deserialize)]
+struct LoggingConfig {
+    log_file: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct AppConfig {
+    logging: LoggingConfig,
+    data_loaders: Vec<DataLoaderConfig>,
+}
+
+fn load_config_from_file(path: &str) -> Result<AppConfig, Box<dyn std::error::Error>> {
     let config_path = Path::new(path);
     if !config_path.exists() {
-        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Config file not found"));
+        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::NotFound, "Config file not found")));
     }
-    if !config_path.is_file() {
-        return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "Config path is not a file"));
-    }
-    let mut file = File::open(Path::new(config_path))?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    let configs: Vec<DataLoaderConfig> = match serde_json::from_str(&contents) {
-        Ok(configs) => configs,
-        Err(err) => return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, err)),
-    };
-    Ok(configs)
+    let config_str = fs::read_to_string(config_path)?;
+    let config: AppConfig = serde_json::from_str(&config_str)?;
+    Ok(config)
 }
 
 fn run_data_load(config: DataLoaderConfig) {
     let data_loader = match TradeFactory::new(config.data_loader_type, config) {
         Ok(loader) => loader,
         Err(err) => {
-            eprintln!("Error creating data loader with: {}", err);
+            log::error!("Error creating data loader with: {}", err);
             return;
         }
     };
@@ -47,28 +57,58 @@ fn run_data_load(config: DataLoaderConfig) {
             }
         }
         Err(err) => {
-            eprintln!("Error loading trades: {}", err);
+            log::error!("Error loading trades: {}", err);
         }
     }
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        eprintln!("Usage: {} config_file", args[0]);
-        return;
-    }
+fn initialize_logging(log_file: &String) -> Config {
+    let logfile = FileAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
+        .build(log_file)
+        .unwrap();
 
-    let config_file = &args[1];
-    let configs = match load_config_from_file(config_file) {
-        Ok(configs) => configs,
+    let log_config = Config::builder()
+        .appender(Appender::builder().build("logfile", Box::new(logfile)))
+        .build(Root::builder().appender("logfile").build(LevelFilter::Info)).unwrap();
+
+    log_config
+}
+
+fn create_logger(log_config: Config) -> Result<crate::Handle, SetLoggerError> {
+    log4rs::init_config(log_config)
+}
+
+fn main() {
+    // Bootstrap logging
+    let cfg = initialize_logging(&"bootstrap.log".to_string());
+    let handle =  match create_logger(cfg) {
+        Ok(handle) => handle,
         Err(err) => {
-            eprintln!("Failed to load config: {}", err);
-            return;
+            eprintln!("Error bootstrapping logger: {:?}", err);
+            process::exit(-1);
         }
     };
 
-    for config in configs {
-        run_data_load(config);
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        eprintln!("Usage: {} config_file", args[0]);
+        process::exit(1);
+    }
+    let config_file = &args[1];
+
+    let config = match load_config_from_file(config_file) {
+        Ok(config) => config,
+        Err(err) => {
+            log::error!("Error loading config file: {}", err);
+            process::exit(1);
+        }
+    };
+
+    let cfg = initialize_logging(&config.logging.log_file);
+    handle.set_config(cfg);
+
+    for data_loader_config in config.data_loaders {
+        run_data_load(data_loader_config);
     }
 }

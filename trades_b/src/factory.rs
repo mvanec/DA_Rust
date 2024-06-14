@@ -1,10 +1,10 @@
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use crate::data_loader::{DataLoader, DataLoaderConfig, DataLoaderError};
 use crate::csv_data_loader::CsvDataLoader;
 use crate::mysql_data_loader::MySqlDataLoader;
 
 
-#[derive(Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum DataLoaderType {
     #[serde(rename = "Csv")]
     Csv,
