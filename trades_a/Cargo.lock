@@ -1794,6 +1794,7 @@ dependencies = [
 name = "trades_a"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "csv",
  "log",
  "log4rs",
