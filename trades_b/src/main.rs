@@ -10,6 +10,8 @@ use log4rs::encode::pattern::PatternEncoder;
 use log::SetLoggerError;
 use log4rs::Handle;
 use log::LevelFilter;
+use anyhow::Result;
+use anyhow::Error;
 
 // Modules for data loading and models
 mod data_loader;
@@ -79,12 +81,7 @@ fn run_data_load(config: DataLoaderConfig) {
 }
 
 // Initialize logging using the given configuration
-fn initialize_logging(logging_config: &LoggingConfig) -> Config {
-    // Create a file appender
-    let logfile = FileAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
-        .build(&logging_config.log_file)
-        .unwrap();
+fn initialize_logging(logging_config: &LoggingConfig) -> Result<Config, Error> {
 
     // Determine the log level
     let log_level_filter = match logging_config.log_level.to_lowercase().as_str() {
@@ -96,12 +93,17 @@ fn initialize_logging(logging_config: &LoggingConfig) -> Config {
         _ => LevelFilter::Info,
     };
 
-    // Create the logging configuration
+    // Create a file appender
+    let logfile = FileAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
+        .build(&logging_config.log_file)?;
+
+        // Create the logging configuration
     let log_config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(Root::builder().appender("logfile").build(log_level_filter)).unwrap();
+        .build(Root::builder().appender("logfile").build(log_level_filter))?;
 
-    log_config
+    Ok(log_config)
 }
 
 // Create a logger instance using the given configuration
@@ -109,13 +111,13 @@ fn create_logger(log_config: Config) -> Result<crate::Handle, SetLoggerError> {
     log4rs::init_config(log_config)
 }
 
-fn main() {
+fn main() -> Result<(), anyhow::Error> {
     // Bootstrap logging
     let bootstrap_logging_config = LoggingConfig {
         log_file: "bootstrap.log".to_string(),
         log_level: "info".to_string(),
     };
-    let cfg = initialize_logging(&bootstrap_logging_config);
+    let cfg = initialize_logging(&bootstrap_logging_config)?;
     let handle =  match create_logger(cfg) {
         Ok(handle) => handle,
         Err(err) => {
@@ -142,11 +144,13 @@ fn main() {
     };
 
     // Reconfigure logging using the loaded configuration
-    let cfg = initialize_logging(&config.logging);
+    let cfg  = initialize_logging(&config.logging)?;
     handle.set_config(cfg);
 
     // Run data loads using the loaded configuration
     for data_loader_config in config.data_loaders {
         run_data_load(data_loader_config);
     }
+
+    Ok(())
 }
