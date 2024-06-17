@@ -1,6 +1,8 @@
-use sqlx::PgPool;
 use sqlx::types::Uuid;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, NaiveDateTime};
+use sqlx::PgPool;
+use async_trait::async_trait;
+
 use crate::traits::model_trait::ModelTrait;
 
 #[derive(Debug, sqlx::FromRow)]
