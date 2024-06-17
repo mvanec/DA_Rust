@@ -1,10 +1,5 @@
-mod models {
-    include!("models/mod.rs");
-}
-
-mod traits {
-    include!("traits/mod.rs");
-}
+mod models;
+mod traits;
 
 use dotenv::dotenv;
 use sqlx::PgPool;
