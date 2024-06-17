@@ -46,7 +46,7 @@ async fn main() -> Result<(), sqlx::Error> {
     timing.create(&pool).await?;
 
     // Load projects from CSV
-    load_from_csv("projects.csv", &pool, |record| {
+    load_from_csv(&projects_csv, &pool, |record| {
         Project::new(
             Uuid::parse_str(&record[0]).unwrap(),
             record[1].clone(),
@@ -59,7 +59,7 @@ async fn main() -> Result<(), sqlx::Error> {
     .unwrap();
 
     // Load tasks from CSV
-    load_from_csv("tasks.csv", &pool, |record| {
+    load_from_csv(&tasks_csv, &pool, |record| {
         Task::new(
             Uuid::parse_str(&record[0]).unwrap(),
             Uuid::parse_str(&record[1]).unwrap(),
@@ -70,7 +70,7 @@ async fn main() -> Result<(), sqlx::Error> {
     .unwrap();
 
     // Load timings from CSV
-    load_from_csv("timings.csv", &pool, |record| {
+    load_from_csv(&timings_csv, &pool, |record| {
         Timing::new(
             Uuid::parse_str(&record[1]).unwrap(),
             NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S").unwrap(),
