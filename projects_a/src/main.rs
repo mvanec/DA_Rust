@@ -1,50 +1,73 @@
-use sqlx::PgConnection;
+mod models;
+mod traits;
+
+use models::{Project, Task, Timing};
+use traits::model_trait::{load_from_csv, ModelTrait};
+use sqlx::PgPool;
 use uuid::Uuid;
-use chrono::{NaiveDate, NaiveTime, NaiveDateTime};
-use project::{Project};
-use project_task::{ProjectTask};
-use task_timing::{TaskTiming};
+use chrono::NaiveDate;
 
 #[tokio::main]
-async fn main() {
-    let connection_string = "postgres://user:password@localhost/database";
-    let mut connection = PgConnection::connect(connection_string)
-        .await
-        .expect("Failed to connect to database");
+async fn main() -> Result<(), sqlx::Error> {
+    let database_url = "postgres://user:password@localhost/database";
+    let pool = PgPool::connect(database_url).await?;
 
-    let project = Project {
-        project_id: Uuid::new_v4(),
-        project_name: "Test Project".to_string(),
-        project_start_date: NaiveDate::from_ymd(2022, 1, 1),
-        project_end_date: NaiveDate::from_ymd(2022, 12, 31),
-        pay_rate: 20.0,
-        project_total_duration: NaiveTime::from_hms(0, 0, 0),
-        project_total_pay: 0.0,
-    };
+    // Example project
+    let project = Project::new(
+        Uuid::new_v4(),
+        "Test Project".to_string(),
+        NaiveDate::from_ymd(2022, 1, 1),
+        NaiveDate::from_ymd(2022, 12, 31),
+        50.0,
+    );
+    project.create(&pool).await?;
 
-    project.insert(&mut connection)
-        .await
-        .expect("Failed to insert project");
+    // Example task
+    let task = Task::new(Uuid::new_v4(), project.project_id, "Test Task".to_string());
+    task.create(&pool).await?;
 
-    let project_task = ProjectTask {
-        task_id: Uuid::new_v4(),
-        project_id: project.project_id,
-        task_name: "Test Task".to_string(),
-        task_total_duration: NaiveTime::from_hms(0, 0, 0),
-    };
+    // Example timing
+    let timing = Timing::new(
+        task.task_id,
+        NaiveDate::from_ymd(2022, 1, 1).and_hms(8, 0, 0),
+        NaiveDate::from_ymd(2022, 1, 1).and_hms(16, 0, 0),
+    );
+    timing.create(&pool).await?;
 
-    project_task.insert(&mut connection)
-        .await
-        .expect("Failed to insert project task");
+    // Load projects from CSV
+    load_from_csv("projects.csv", &pool, |record| {
+        Project::new(
+            Uuid::parse_str(&record[0]).unwrap(),
+            record[1].clone(),
+            NaiveDate::parse_from_str(&record[2], "%Y-%m-%d").unwrap(),
+            NaiveDate::parse_from_str(&record[3], "%Y-%m-%d").unwrap(),
+            record[4].parse().unwrap(),
+        )
+    })
+    .await
+    .unwrap();
 
-    let task_timing = TaskTiming {
-        timing_id: 0,
-        task_id: project_task.task_id,
-        start_timestamp: NaiveDateTime::from_timestamp(1643723400, 0),
-        end_timestamp: NaiveDateTime::from_timestamp(1643723400, 0),
-    };
+    // Load tasks from CSV
+    load_from_csv("tasks.csv", &pool, |record| {
+        Task::new(
+            Uuid::parse_str(&record[0]).unwrap(),
+            Uuid::parse_str(&record[1]).unwrap(),
+            record[2].clone(),
+        )
+    })
+    .await
+    .unwrap();
 
-    task_timing.insert(&mut connection)
-        .await
-        .expect("Failed to insert task timing");
+    // Load timings from CSV
+    load_from_csv("timings.csv", &pool, |record| {
+        Timing::new(
+            Uuid::parse_str(&record[1]).unwrap(),
+            NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S").unwrap(),
+            NaiveDateTime::parse_from_str(&record[3], "%Y-%m-%d %H:%M:%S").unwrap(),
+        )
+    })
+    .await
+    .unwrap();
+
+    Ok(())
 }
