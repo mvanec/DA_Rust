@@ -1,4 +1,0 @@
-database_url = "postgres://user:password@localhost/database"
-projects_csv = "projects.csv"
-tasks_csv = "tasks.csv"
-timings_csv = "timings.csv"

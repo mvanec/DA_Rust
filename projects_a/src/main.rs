@@ -1,18 +1,19 @@
 mod models;
 mod traits;
-mod config;
 
-use models::{Project, Task, Timing};
-use traits::model_trait::{load_from_csv, ModelTrait};
+use dotenv::dotenv;
 use sqlx::PgPool;
 use uuid::Uuid;
 use chrono::NaiveDate;
-use config::Config;
+use std::env;
+
+use models::{Project, Task, Timing};
+use traits::model_trait::{load_from_csv, ModelTrait};
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    let config = Config::new();
-    let pool = PgPool::connect(config.database_url()).await?;
+    let database_url = "postgres://user:password@localhost/database";
+    let pool = PgPool::connect(database_url).await?;
 
     // Example project
     let project = Project::new(
@@ -37,7 +38,7 @@ async fn main() -> Result<(), sqlx::Error> {
     timing.create(&pool).await?;
 
     // Load projects from CSV
-    load_from_csv(config.projects_csv(), &pool, |record| {
+    load_from_csv("projects.csv", &pool, |record| {
         Project::new(
             Uuid::parse_str(&record[0]).unwrap(),
             record[1].clone(),
@@ -50,7 +51,7 @@ async fn main() -> Result<(), sqlx::Error> {
     .unwrap();
 
     // Load tasks from CSV
-    load_from_csv(config.tasks_csv(), &pool, |record| {
+    load_from_csv("tasks.csv", &pool, |record| {
         Task::new(
             Uuid::parse_str(&record[0]).unwrap(),
             Uuid::parse_str(&record[1]).unwrap(),
@@ -61,7 +62,7 @@ async fn main() -> Result<(), sqlx::Error> {
     .unwrap();
 
     // Load timings from CSV
-    load_from_csv(config.timings_csv(), &pool, |record| {
+    load_from_csv("timings.csv", &pool, |record| {
         Timing::new(
             Uuid::parse_str(&record[1]).unwrap(),
             NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S").unwrap(),
