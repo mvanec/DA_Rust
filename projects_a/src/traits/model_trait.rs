@@ -1,6 +1,8 @@
+use async_trait::async_trait;
 use sqlx::PgPool;
 use std::io;
 
+#[async_trait(?Send)]
 pub trait ModelTrait {
     async fn create(&self, pool: &PgPool) -> Result<(), sqlx::Error>;
     async fn delete(&self, pool: &PgPool) -> Result<(), sqlx::Error>;
@@ -14,6 +16,7 @@ where
     let mut rdr = csv::Reader::from_path(path)?;
     for result in rdr.records() {
         let record = result?;
+        let record: Vec<String> = record.into_iter().map(|s| s.to_string()).collect();
         let model = f(record);
         model.create(pool).await.unwrap();
     }

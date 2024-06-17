@@ -24,7 +24,7 @@ impl Timing {
     }
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 impl ModelTrait for Timing {
     async fn create(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
         sqlx::query(
