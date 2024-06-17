@@ -8,6 +8,7 @@ use traits::model_trait::{load_from_csv, ModelTrait};
 use sqlx::PgPool;
 use uuid::Uuid;
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
