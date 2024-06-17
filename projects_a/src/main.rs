@@ -22,9 +22,11 @@ async fn main() -> Result<(), sqlx::Error> {
         NaiveDate::from_ymd(2022, 12, 31),
         50.0,
     );
+    project.create(&pool).await?;
 
     // Example task
     let task = Task::new(Uuid::new_v4(), project.project_id, "Test Task".to_string());
+    task.create(&pool).await?;
 
     // Example timing
     let timing = Timing::new(
@@ -32,10 +34,6 @@ async fn main() -> Result<(), sqlx::Error> {
         NaiveDate::from_ymd(2022, 1, 1).and_hms(8, 0, 0),
         NaiveDate::from_ymd(2022, 1, 1).and_hms(16, 0, 0),
     );
-
-    // Create project, task and timing
-    project.create(&pool).await?;
-    task.create(&pool).await?;
     timing.create(&pool).await?;
 
     // Load projects from CSV
