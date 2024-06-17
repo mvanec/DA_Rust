@@ -1,5 +1,5 @@
-use sqlx::types::Uuid;
-use chrono::{NaiveDate, NaiveDateTime};
+use uuid::Uuid;
+use chrono::NaiveDateTime;
 use sqlx::PgPool;
 use async_trait::async_trait;
 

@@ -1,23 +1,18 @@
 mod models;
 mod traits;
 
-use dotenv::dotenv;
+use models::project::Project;
+use models::task::Task;
+use models::timing::Timing;
+use traits::model_trait::{load_from_csv, ModelTrait};
 use sqlx::PgPool;
 use uuid::Uuid;
 use chrono::NaiveDate;
-use std::env;
-
-use models::{Project, Task, Timing};
-use traits::model_trait::{load_from_csv, ModelTrait};
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    dotenv().ok();
-
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let projects_csv = env::var("PROJECTS_CSV").expect("PROJECTS_CSV must be set");
-    let tasks_csv = env::var("TASKS_CSV").expect("TASKS_CSV must be set");
-    let timings_csv = env::var("TIMINGS_CSV").expect("TIMINGS_CSV must be set");
+    let database_url = "postgres://user:password@localhost/database";
+    let pool = PgPool::connect(database_url).await?;
 
     // Example project
     let project = Project::new(

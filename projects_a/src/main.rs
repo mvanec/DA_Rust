@@ -1,23 +1,18 @@
 mod models;
 mod traits;
 
-use dotenv::dotenv;
+use models::project::Project;
+use models::task::Task;
+use models::timing::Timing;
+use traits::model_trait::{load_from_csv, ModelTrait};
 use sqlx::PgPool;
 use uuid::Uuid;
 use chrono::NaiveDate;
-use std::env;
-
-use models::{Project, Task, Timing};
-use traits::model_trait::{load_from_csv, ModelTrait};
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    dotenv().ok();
-
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let projects_csv = env::var("PROJECTS_CSV").expect("PROJECTS_CSV must be set");
-    let tasks_csv = env::var("TASKS_CSV").expect("TASKS_CSV must be set");
-    let timings_csv = env::var("TIMINGS_CSV").expect("TIMINGS_CSV must be set");
+    let database_url = "postgres://user:password@localhost/database";
+    let pool = PgPool::connect(database_url).await?;
 
     // Example project
     let project = Project::new(
@@ -27,11 +22,9 @@ async fn main() -> Result<(), sqlx::Error> {
         NaiveDate::from_ymd(2022, 12, 31),
         50.0,
     );
-    project.create(&pool).await?;
 
     // Example task
     let task = Task::new(Uuid::new_v4(), project.project_id, "Test Task".to_string());
-    task.create(&pool).await?;
 
     // Example timing
     let timing = Timing::new(
@@ -39,6 +32,10 @@ async fn main() -> Result<(), sqlx::Error> {
         NaiveDate::from_ymd(2022, 1, 1).and_hms(8, 0, 0),
         NaiveDate::from_ymd(2022, 1, 1).and_hms(16, 0, 0),
     );
+
+    // Create project, task and timing
+    project.create(&pool).await?;
+    task.create(&pool).await?;
     timing.create(&pool).await?;
 
     // Load projects from CSV
