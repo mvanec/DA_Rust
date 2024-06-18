@@ -14,9 +14,12 @@ where
     F: Fn(Vec<String>) -> T,
     T: ModelTrait + Send + 'static,
 {
-    let mut rdr = csv::Reader::from_path(path)?;
+    let mut rdr = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .from_path(path)?;
     for result in rdr.records() {
         let record = result?;
+        eprintln!("{:?}", &record);
         let record: Vec<String> = record.into_iter().map(|s| s.to_string()).collect();
         let model = f(record);
         model.create(pool).await.unwrap();

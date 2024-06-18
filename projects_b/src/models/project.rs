@@ -39,6 +39,7 @@ impl Project {
 #[async_trait(?Send)]
 impl ModelTrait for Project {
     async fn create(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
+        eprintln!("Inserting record for {}", &self.project_id);
         sqlx::query(
             "INSERT INTO Projects (ProjectId, ProjectName, ProjectStartDate, ProjectEndDate, PayRate)
              VALUES ($1, $2, $3, $4, $5)",

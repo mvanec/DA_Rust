@@ -4,13 +4,8 @@ mod traits;
 use dotenv::dotenv;
 use std::env;
 use sqlx::PgPool;
-use uuid::Uuid;
-use chrono::{NaiveDate, NaiveDateTime};
 
-use models::project::Project;
-use models::task::Task;
-use models::timing::Timing;
-use traits::model_trait::{load_from_csv, ModelTrait};
+use traits::model_trait::load_from_csv;
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
@@ -23,35 +18,13 @@ async fn main() -> Result<(), sqlx::Error> {
 
     let pool = PgPool::connect(&database_url).await?;
 
-    // Example project
-    let project = Project::new(
-        Uuid::new_v4(),
-        "Test Project".to_string(),
-        NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
-        NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
-        50.0,
-    );
-    project.create(&pool).await?;
-
-    // Example task
-    let task = Task::new(Uuid::new_v4(), project.project_id, "Test Task".to_string());
-    task.create(&pool).await?;
-
-    // Example timing
-    let timing = Timing::new(
-        task.task_id,
-        NaiveDate::from_ymd_opt(2022, 1, 1).unwrap().and_hms_opt(8, 0, 0).unwrap(),
-        NaiveDate::from_ymd_opt(2022, 1, 1).unwrap().and_hms_opt(16, 0, 0).unwrap(),
-    );
-    timing.create(&pool).await?;
-
     // Load projects from CSV
     load_from_csv(&projects_csv, &pool, |record| {
-        Project::new(
-            Uuid::parse_str(&record[0]).unwrap(),
+        models::project::Project::new(
+            uuid::Uuid::parse_str(&record[0]).unwrap(),
             record[1].clone(),
-            NaiveDate::parse_from_str(&record[2], "%Y-%m-%d").unwrap(),
-            NaiveDate::parse_from_str(&record[3], "%Y-%m-%d").unwrap(),
+            chrono::NaiveDate::parse_from_str(&record[2], "%Y-%m-%d").unwrap(),
+            chrono::NaiveDate::parse_from_str(&record[3], "%Y-%m-%d").unwrap(),
             record[4].parse().unwrap(),
         )
     })
@@ -60,9 +33,9 @@ async fn main() -> Result<(), sqlx::Error> {
 
     // Load tasks from CSV
     load_from_csv(&tasks_csv, &pool, |record| {
-        Task::new(
-            Uuid::parse_str(&record[0]).unwrap(),
-            Uuid::parse_str(&record[1]).unwrap(),
+        models::task::Task::new(
+            uuid::Uuid::parse_str(&record[0]).unwrap(),
+            uuid::Uuid::parse_str(&record[1]).unwrap(),
             record[2].clone(),
         )
     })
@@ -71,10 +44,10 @@ async fn main() -> Result<(), sqlx::Error> {
 
     // Load timings from CSV
     load_from_csv(&timings_csv, &pool, |record| {
-        Timing::new(
-            Uuid::parse_str(&record[1]).unwrap(),
-            NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S").unwrap(),
-            NaiveDateTime::parse_from_str(&record[3], "%Y-%m-%d %H:%M:%S").unwrap(),
+        models::timing::Timing::new(
+            uuid::Uuid::parse_str(&record[1]).unwrap(),
+            chrono::NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S").unwrap(),
+            chrono::NaiveDateTime::parse_from_str(&record[3], "%Y-%m-%d %H:%M:%S").unwrap(),
         )
     })
     .await
