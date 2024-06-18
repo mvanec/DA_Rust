@@ -2,7 +2,7 @@ use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
 
-use crate::models::project::Project;
+use projects::models::project::Project;
 
 #[tokio::test]
 async fn test_project_create_delete() {
