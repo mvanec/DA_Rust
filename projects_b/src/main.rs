@@ -1,3 +1,6 @@
+mod models;
+mod traits;
+
 use dotenv::dotenv;
 use std::env;
 use sqlx::PgPool;
