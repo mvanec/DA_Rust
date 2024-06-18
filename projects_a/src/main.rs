@@ -27,8 +27,8 @@ async fn main() -> Result<(), sqlx::Error> {
     let project = Project::new(
         Uuid::new_v4(),
         "Test Project".to_string(),
-        NaiveDate::from_ymd(2022, 1, 1),
-        NaiveDate::from_ymd(2022, 12, 31),
+        NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
+        NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
         50.0,
     );
     project.create(&pool).await?;
@@ -40,8 +40,8 @@ async fn main() -> Result<(), sqlx::Error> {
     // Example timing
     let timing = Timing::new(
         task.task_id,
-        NaiveDate::from_ymd(2022, 1, 1).and_hms(8, 0, 0),
-        NaiveDate::from_ymd(2022, 1, 1).and_hms(16, 0, 0),
+        NaiveDate::from_ymd_opt(2022, 1, 1).unwrap().and_hms_opt(8, 0, 0).unwrap(),
+        NaiveDate::from_ymd_opt(2022, 1, 1).unwrap().and_hms_opt(16, 0, 0).unwrap(),
     );
     timing.create(&pool).await?;
 

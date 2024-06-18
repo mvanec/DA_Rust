@@ -5,6 +5,7 @@ use std::io;
 #[async_trait(?Send)]
 pub trait ModelTrait {
     async fn create(&self, pool: &PgPool) -> Result<(), sqlx::Error>;
+    #[allow(dead_code)]
     async fn delete(&self, pool: &PgPool) -> Result<(), sqlx::Error>;
 }
 

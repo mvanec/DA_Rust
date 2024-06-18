@@ -1,7 +1,7 @@
-use uuid::Uuid;
+use async_trait::async_trait;
 use chrono::NaiveDate;
 use sqlx::PgPool;
-use async_trait::async_trait;
+use uuid::Uuid;
 
 use crate::traits::model_trait::ModelTrait;
 
@@ -70,11 +70,17 @@ mod tests {
     fn test_new_project() {
         let project_id = Uuid::new_v4();
         let project_name = "Test Project".to_string();
-        let project_start_date = NaiveDate::from_ymd(2022, 1, 1);
-        let project_end_date = NaiveDate::from_ymd(2022, 12, 31);
+        let project_start_date = NaiveDate::from_ymd_opt(2022, 1, 1).unwrap();
+        let project_end_date = NaiveDate::from_ymd_opt(2022, 12, 31).unwrap();
         let pay_rate = 100.0;
 
-        let project = Project::new(project_id, project_name.clone(), project_start_date, project_end_date, pay_rate);
+        let project = Project::new(
+            project_id,
+            project_name.clone(),
+            project_start_date,
+            project_end_date,
+            pay_rate,
+        );
 
         assert_eq!(project.project_id, project_id);
         assert_eq!(project.project_name, project_name);
