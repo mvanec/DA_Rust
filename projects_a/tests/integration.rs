@@ -50,7 +50,6 @@ async fn test_project_create_delete() {
 }
 
 async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
-    // dotenv().ok();
     dotenv::from_filename(".env.test").ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
