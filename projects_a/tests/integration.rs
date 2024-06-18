@@ -1,7 +1,8 @@
+use ctor::ctor;
 use sqlx::PgPool;
 use sqlx::Row;
-use tokio;
 use std::env;
+use tokio;
 
 use projects::models::project::Project;
 use projects::traits::model_trait::ModelTrait;
@@ -63,27 +64,43 @@ async fn test_project_delete() {
     assert_eq!(count, 0);
 }
 
+#[ctor]
+fn test_setup() {
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    rt.block_on(async {
+        let pool = create_test_pool().await.expect("Failed to create test pool");
+        let mut tx = pool.begin().await.expect("Failed to start transaction");
+
+        // Drop the database if it exists
+        sqlx::query("DROP TABLE IF EXISTS Projects")
+            .execute(&mut *tx)
+            .await
+            .expect("Failed to drop Projects table");
+
+        // Create the table
+        sqlx::query(
+            "CREATE TABLE Projects (
+            ProjectId UUID PRIMARY KEY,
+            ProjectName VARCHAR(255),
+            ProjectStartDate DATE,
+            ProjectEndDate DATE,
+            PayRate FLOAT
+        )",
+        )
+        .execute(&mut *tx)
+        .await
+        .expect("Failed to create Projects table");
+
+        tx.commit().await.expect("Failed to commit transaction");
+    });
+}
+
 async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
     dotenv::from_filename(".env.test").ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
     let pool = PgPool::connect(&database_url).await?;
-
-    // Drop the database if it exists
-    sqlx::query("DROP TABLE IF EXISTS Projects")
-        .execute(&pool)
-        .await?;
-
-    // Create the table
-    sqlx::query("CREATE TABLE Projects (
-        ProjectId UUID PRIMARY KEY,
-        ProjectName VARCHAR(255),
-        ProjectStartDate DATE,
-        ProjectEndDate DATE,
-        PayRate FLOAT
-    )")
-    .execute(&pool)
-    .await?;
-
     Ok(pool)
 }
