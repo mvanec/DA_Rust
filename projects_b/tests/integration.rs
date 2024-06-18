@@ -1,7 +1,6 @@
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use tokio;
-
-use crate::models::project::Project;
+use crate::src::models::project::Project;
 
 #[tokio::test]
 async fn test_project_create_delete() {
@@ -22,11 +21,11 @@ async fn test_project_create_delete() {
         .await
         .unwrap();
 
-    let project_id: uuid::Uuid = retrieved_project.get("projectid");
-    let project_name: String = retrieved_project.get("projectname");
-    let project_start_date: chrono::NaiveDate = retrieved_project.get("projectstartdate");
-    let project_end_date: chrono::NaiveDate = retrieved_project.get("projectenddate");
-    let pay_rate: f64 = retrieved_project.get("payrate");
+    let project_id: uuid::Uuid = retrieved_project.get(0);
+    let project_name: String = retrieved_project.get(1);
+    let project_start_date: chrono::NaiveDate = retrieved_project.get(2);
+    let project_end_date: chrono::NaiveDate = retrieved_project.get(3);
+    let pay_rate: f64 = retrieved_project.get(4);
 
     assert_eq!(project_id, project.project_id);
     assert_eq!(project_name, project.project_name);
