@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use tokio;
 
-use crate::models::project::Project;
+mod project;
 
 #[tokio::test]
 async fn test_project_create_delete() {
