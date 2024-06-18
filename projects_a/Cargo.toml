@@ -1,5 +1,5 @@
 [package]
-name = "projects_a"
+name = "projects_b"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,4 +12,7 @@ async-std = "1.12.0"
 chrono = "0.4.38"
 async-trait = "0.1.80"
 dotenv = "0.15.0"
-tempfile = "3.10.1"
+
+[dev-dependencies]
+sqlx = { version = "0.7.4", features = [ "postgres", "uuid", "chrono", "runtime-tokio-native-tls" ] }
+tokio = { version = "1.38.0", features = ["full"] }

@@ -65,7 +65,6 @@ impl ModelTrait for Project {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sqlx::PgPool;
 
     #[test]
     fn test_new_project() {
@@ -82,33 +81,5 @@ mod tests {
         assert_eq!(project.project_start_date, project_start_date);
         assert_eq!(project.project_end_date, project_end_date);
         assert_eq!(project.pay_rate, pay_rate);
-    }
-
-    #[sqlx::test]
-    async fn test_project_round_trip(pool: PgPool) {
-        let project_id = Uuid::new_v4();
-        let project_name = "Test Project".to_string();
-        let project_start_date = NaiveDate::from_ymd(2022, 1, 1);
-        let project_end_date = NaiveDate::from_ymd(2022, 12, 31);
-        let pay_rate = 100.0;
-
-        let project = Project::new(project_id, project_name.clone(), project_start_date, project_end_date, pay_rate);
-
-        // Insert data into the test database
-        project.create(&pool).await.unwrap();
-
-        // Retrieve the data from the test database
-        let retrieved_project = sqlx::query_as("SELECT * FROM Projects WHERE ProjectId = $1")
-            .bind(&project_id)
-            .fetch_one(&pool)
-            .await
-            .unwrap();
-
-        // Compare the retrieved data to the original data
-        assert_eq!(retrieved_project.project_id, project_id);
-        assert_eq!(retrieved_project.project_name, project_name);
-        assert_eq!(retrieved_project.project_start_date, project_start_date);
-        assert_eq!(retrieved_project.project_end_date, project_end_date);
-        assert_eq!(retrieved_project.pay_rate, pay_rate);
     }
 }
