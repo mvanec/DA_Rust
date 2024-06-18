@@ -1,4 +1,5 @@
 use ctor::ctor;
+use log::{error, info};
 use sqlx::PgPool;
 use sqlx::Row;
 use std::env;
@@ -75,41 +76,79 @@ async fn test_project_delete() -> Result<(), sqlx::Error> {
 
 #[ctor]
 fn test_setup() {
+    dotenv::from_filename(".env.test").ok();
+    std::env::set_var(
+        "RUST_LOG",
+        env::var("RUST_LOG").unwrap_or(String::from("info")),
+    );
+    env_logger::init();
+
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .unwrap();
 
+    info!("Commencing the test run");
     rt.block_on(async {
-        let pool = create_test_pool().await.expect("Failed to create test pool");
-        let mut tx = pool.begin().await.expect("Failed to start transaction");
+        match create_test_pool().await {
+            Ok(pool) => {
+                let mut tx = match pool.begin().await {
+                    Ok(tx) => tx,
+                    Err(e) => {
+                        error!("Failed to start transaction: {}", e);
+                        panic!("Failed to start transaction");
+                    }
+                };
 
-        // Drop the database if it exists
-        sqlx::query("DROP TABLE IF EXISTS Projects")
-            .execute(&mut *tx)
-            .await
-            .expect("Failed to drop Projects table");
+                // Drop the database if it exists
+                match sqlx::query("DROP TABLE IF EXISTS Projects")
+                    .execute(&mut *tx)
+                    .await
+                {
+                    Ok(_) => info!("Dropped Projects table"),
+                    Err(e) => {
+                        error!("Failed to drop Projects table: {}", e);
+                        panic!("Failed to drop Projects table");
+                    }
+                }
 
-        // Create the table
-        sqlx::query(
-            "CREATE TABLE Projects (
-            ProjectId UUID PRIMARY KEY,
-            ProjectName VARCHAR(255),
-            ProjectStartDate DATE,
-            ProjectEndDate DATE,
-            PayRate FLOAT
-        )",
-        )
-        .execute(&mut *tx)
-        .await
-        .expect("Failed to create Projects table");
+                // Create the table
+                match sqlx::query(
+                    "CREATE TABLE Projects (
+                    ProjectId UUID PRIMARY KEY,
+                    ProjectName VARCHAR(255),
+                    ProjectStartDate DATE,
+                    ProjectEndDate DATE,
+                    PayRate FLOAT
+                )",
+                )
+                .execute(&mut *tx)
+                .await
+                {
+                    Ok(_) => info!("Created Projects table"),
+                    Err(e) => {
+                        error!("Failed to create Projects table: {}", e);
+                        panic!("Failed to create Projects table");
+                    }
+                }
 
-        tx.commit().await.expect("Failed to commit transaction");
+                match tx.commit().await {
+                    Ok(_) => info!("Committed transaction"),
+                    Err(e) => {
+                        error!("Failed to commit transaction: {}", e);
+                        panic!("Failed to commit transaction");
+                    }
+                }
+            }
+            Err(e) => {
+                error!("Failed to create test pool: {}", e);
+                panic!("Failed to create test pool");
+            }
+        }
     });
 }
 
 async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
-    dotenv::from_filename(".env.test").ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await?;
     Ok(pool)
