@@ -7,13 +7,13 @@ use projects::models::project::Project;
 use projects::traits::model_trait::ModelTrait;
 
 #[tokio::test]
-async fn test_project_create_delete() {
+async fn test_project_create() {
     let pool = create_test_pool().await.unwrap();
     let project = Project::new(
         uuid::Uuid::new_v4(),
         "Test Project".to_string(),
-        chrono::NaiveDate::from_ymd_opt(2024, 1, 1).unwrap(),
-        chrono::NaiveDate::from_ymd_opt(2024, 12, 31).unwrap(),
+        chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
+        chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
         100.0,
     );
 
@@ -36,6 +36,20 @@ async fn test_project_create_delete() {
     assert_eq!(project_start_date, project.project_start_date);
     assert_eq!(project_end_date, project.project_end_date);
     assert_eq!(pay_rate, project.pay_rate);
+}
+
+#[tokio::test]
+async fn test_project_delete() {
+    let pool = create_test_pool().await.unwrap();
+    let project = Project::new(
+        uuid::Uuid::new_v4(),
+        "Test Project".to_string(),
+        chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
+        chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
+        100.0,
+    );
+
+    project.create(&pool).await.unwrap();
 
     project.delete(&pool).await.unwrap();
 
@@ -52,8 +66,6 @@ async fn test_project_create_delete() {
 async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
     dotenv::from_filename(".env.test").ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
-    eprintln!("Using database URL: {}", &database_url);
 
     let pool = PgPool::connect(&database_url).await?;
 
