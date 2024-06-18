@@ -1,8 +1,10 @@
 use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
+use std::env;
 
 use projects::models::project::Project;
+use projects::traits::model_trait::ModelTrait;
 
 #[tokio::test]
 async fn test_project_create_delete() {
@@ -48,7 +50,10 @@ async fn test_project_create_delete() {
 }
 
 async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
-    let database_url = "postgres://localhost/test_database";
+    // dotenv().ok();
+    dotenv::from_filename(".env.test").ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
     let pool = PgPool::connect(&database_url).await?;
 
     sqlx::query("CREATE TABLE IF NOT EXISTS Projects (
