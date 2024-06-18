@@ -21,19 +21,18 @@ async fn setup_test_project() -> (PgPool, Project) {
 }
 
 #[tokio::test]
-async fn test_project_create() {
+async fn test_project_create() -> Result<(), sqlx::Error> {
     // Create a test pool and a project
     let (pool, project) = setup_test_project().await;
 
     // Create the project in the database
-    project.create(&pool).await.unwrap();
+    project.create(&pool).await?;
 
     // Retrieve the project from the database
     let retrieved_project = sqlx::query("SELECT * FROM Projects WHERE ProjectId = $1")
         .bind(&project.project_id)
         .fetch_one(&pool)
-        .await
-        .unwrap();
+        .await?;
 
     // Check that the retrieved project matches the original project
     let project_id: uuid::Uuid = retrieved_project.get("projectid");
@@ -47,28 +46,31 @@ async fn test_project_create() {
     assert_eq!(project_start_date, project.project_start_date);
     assert_eq!(project_end_date, project.project_end_date);
     assert_eq!(pay_rate, project.pay_rate);
+
+    Ok(())
 }
 
 #[tokio::test]
-async fn test_project_delete() {
+async fn test_project_delete() -> Result<(), sqlx::Error> {
     // Create a test pool and a project
     let (pool, project) = setup_test_project().await;
 
     // Create the project in the database
-    project.create(&pool).await.unwrap();
+    project.create(&pool).await?;
 
     // Delete the project from the database
-    project.delete(&pool).await.unwrap();
+    project.delete(&pool).await?;
 
     // Check that the project was deleted
     let count = sqlx::query("SELECT COUNT(*) FROM Projects WHERE ProjectId = $1")
         .bind(&project.project_id)
         .fetch_one(&pool)
-        .await
-        .unwrap();
+        .await?;
 
     let count: i64 = count.get(0);
     assert_eq!(count, 0);
+
+    Ok(())
 }
 
 #[ctor]
@@ -77,6 +79,7 @@ fn test_setup() {
         .enable_all()
         .build()
         .unwrap();
+
     rt.block_on(async {
         let pool = create_test_pool().await.expect("Failed to create test pool");
         let mut tx = pool.begin().await.expect("Failed to start transaction");
