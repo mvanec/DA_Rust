@@ -1,16 +1,16 @@
 use sqlx::PgPool;
 use tokio;
 
-mod project;
+use crate::models::project::Project;
 
 #[tokio::test]
 async fn test_project_create_delete() {
     let pool = create_test_pool().await.unwrap();
-    let project = project::Project::new(
+    let project = Project::new(
         uuid::Uuid::new_v4(),
         "Test Project".to_string(),
-        chrono::NaiveDate::from_ymd(2022, 1, 1),
-        chrono::NaiveDate::from_ymd(2022, 12, 31),
+        chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
+        chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
         100.0,
     );
 
@@ -22,11 +22,17 @@ async fn test_project_create_delete() {
         .await
         .unwrap();
 
-    assert_eq!(retrieved_project.project_id, project.project_id);
-    assert_eq!(retrieved_project.project_name, project.project_name);
-    assert_eq!(retrieved_project.project_start_date, project.project_start_date);
-    assert_eq!(retrieved_project.project_end_date, project.project_end_date);
-    assert_eq!(retrieved_project.pay_rate, project.pay_rate);
+    let project_id: uuid::Uuid = retrieved_project.get("projectid");
+    let project_name: String = retrieved_project.get("projectname");
+    let project_start_date: chrono::NaiveDate = retrieved_project.get("projectstartdate");
+    let project_end_date: chrono::NaiveDate = retrieved_project.get("projectenddate");
+    let pay_rate: f64 = retrieved_project.get("payrate");
+
+    assert_eq!(project_id, project.project_id);
+    assert_eq!(project_name, project.project_name);
+    assert_eq!(project_start_date, project.project_start_date);
+    assert_eq!(project_end_date, project.project_end_date);
+    assert_eq!(pay_rate, project.pay_rate);
 
     project.delete(&pool).await.unwrap();
 
@@ -36,6 +42,7 @@ async fn test_project_create_delete() {
         .await
         .unwrap();
 
+    let count: i64 = count.get(0);
     assert_eq!(count, 0);
 }
 
