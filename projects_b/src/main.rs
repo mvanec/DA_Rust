@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 #![allow(deprecated)]
 
-mod models;
-mod traits;
+pub mod models;
+pub mod traits;
 
 use dotenv::dotenv;
 use std::env;

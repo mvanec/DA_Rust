@@ -2,7 +2,6 @@ use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
 
-// use super::src::models::project::Project;
 use crate::models::project::Project;
 
 #[tokio::test]

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(deprecated)]
 
-pub mod models;
+mod models;
 mod traits;
 
 use dotenv::dotenv;
