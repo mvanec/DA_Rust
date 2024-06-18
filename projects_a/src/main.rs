@@ -1,9 +1,3 @@
-#![allow(dead_code)]
-#![allow(deprecated)]
-
-mod models;
-mod traits;
-
 use dotenv::dotenv;
 use std::env;
 use sqlx::PgPool;
