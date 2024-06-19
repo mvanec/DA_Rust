@@ -34,6 +34,8 @@ async fn setup_test_task(pool: &PgPool) -> (Project, Task) {
 
 #[tokio::test]
 async fn test_task_create() -> Result<(), sqlx::Error> {
+    let _ = crate::common::SETUP;
+
     // Create a test pool
     let pool = create_test_pool().await.unwrap();
 
@@ -62,6 +64,8 @@ async fn test_task_create() -> Result<(), sqlx::Error> {
 
 #[tokio::test]
 async fn test_task_delete() -> Result<(), sqlx::Error> {
+    let _ = crate::common::SETUP;
+
     // Create a test pool
     let pool = create_test_pool().await.unwrap();
 

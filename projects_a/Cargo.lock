@@ -1532,6 +1532,7 @@ dependencies = [
  "ctor",
  "dotenv",
  "env_logger",
+ "lazy_static",
  "log",
  "sqlx",
  "tokio",

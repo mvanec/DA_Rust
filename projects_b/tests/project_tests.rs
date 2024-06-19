@@ -23,6 +23,8 @@ async fn setup_test_project() -> (PgPool, Project) {
 
 #[tokio::test]
 async fn test_project_create() -> Result<(), sqlx::Error> {
+    let _ = crate::common::SETUP;
+
     // Create a test pool and a project
     let (pool, project) = setup_test_project().await;
 
@@ -53,6 +55,8 @@ async fn test_project_create() -> Result<(), sqlx::Error> {
 
 #[tokio::test]
 async fn test_project_delete() -> Result<(), sqlx::Error> {
+    let _ = crate::common::SETUP;
+
     // Create a test pool and a project
     let (pool, project) = setup_test_project().await;
 

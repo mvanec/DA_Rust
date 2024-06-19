@@ -1,9 +1,15 @@
 // tests/common.rs
-use ctor::ctor;
+// use ctor::ctor;
 use log::{error, info};
 use sqlx::PgPool;
 use std::env;
 use tokio;
+
+use once_cell::sync::Lazy;
+
+pub static SETUP: Lazy<()> = Lazy::new(|| {
+    test_setup();
+});
 
 pub async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -11,7 +17,7 @@ pub async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
     Ok(pool)
 }
 
-#[ctor]
+// #[ctor]
 fn test_setup() {
     dotenv::from_filename(".env.test").ok();
     std::env::set_var(
