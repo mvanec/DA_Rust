@@ -1,12 +1,12 @@
+mod common;
+use crate::common::create_test_pool;
+
 use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
 
 use projects::models::project::Project;
 use projects::traits::model_trait::ModelTrait;
-
-mod common;
-use crate::common::*;
 
 // Create a test pool and a project
 async fn setup_test_project() -> (PgPool, Project) {

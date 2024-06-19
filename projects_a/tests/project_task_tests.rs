@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
 
+use projects::models::project::Project;
 use projects::models::task::Task;
 use projects::traits::model_trait::ModelTrait;
 
@@ -9,24 +10,35 @@ mod common;
 use crate::common::create_test_pool;
 
 // Create a test pool and a task
-async fn setup_test_task() -> (PgPool, Task) {
-    let pool = create_test_pool().await.unwrap();
-    let project_id = uuid::Uuid::new_v4();
+async fn setup_test_task(pool: &PgPool) -> (Project, Task) {
+    // Create a project
+    let project = Project::new(
+        uuid::Uuid::new_v4(),
+        "Test Project".to_string(),
+        chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
+        chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
+        100.0,
+    );
+    project.create(pool).await.unwrap();
+
+    // Create a task
     let task = Task::new(
         uuid::Uuid::new_v4(),
-        project_id,
+        project.project_id,
         "Test Task".to_string(),
     );
-    (pool, task)
+    task.create(pool).await.unwrap();
+
+    (project, task)
 }
 
 #[tokio::test]
 async fn test_task_create() -> Result<(), sqlx::Error> {
-    // Create a test pool and a task
-    let (pool, task) = setup_test_task().await;
+    // Create a test pool
+    let pool = create_test_pool().await.unwrap();
 
-    // Create the task in the database
-    task.create(&pool).await?;
+    // Setup the test task
+    let (_, task) = setup_test_task(&pool).await;
 
     // Retrieve the task from the database
     let retrieved_task = sqlx::query("SELECT * FROM ProjectTasks WHERE TaskId = $1")
@@ -50,11 +62,11 @@ async fn test_task_create() -> Result<(), sqlx::Error> {
 
 #[tokio::test]
 async fn test_task_delete() -> Result<(), sqlx::Error> {
-    // Create a test pool and a task
-    let (pool, task) = setup_test_task().await;
+    // Create a test pool
+    let pool = create_test_pool().await.unwrap();
 
-    // Create the task in the database
-    task.create(&pool).await?;
+    // Setup the test task
+    let (_, task) = setup_test_task(&pool).await;
 
     // Delete the task from the database
     task.delete(&pool).await?;
