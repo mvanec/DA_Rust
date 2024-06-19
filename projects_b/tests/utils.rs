@@ -5,20 +5,13 @@ use sqlx::PgPool;
 use std::env;
 use tokio;
 
-use once_cell::sync::Lazy;
-
-pub static SETUP: Lazy<()> = Lazy::new(|| {
-    test_setup();
-});
-
 pub async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await?;
     Ok(pool)
 }
 
-// #[ctor]
-fn test_setup() {
+pub fn test_setup() {
     dotenv::from_filename(".env.test").ok();
     std::env::set_var(
         "RUST_LOG",

@@ -1,12 +1,18 @@
-mod common;
-use crate::common::create_test_pool;
+mod utils;
+use crate::utils::create_test_pool;
 
 use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
+use ctor::ctor;
 
 use projects::models::project::Project;
 use projects::traits::model_trait::ModelTrait;
+
+#[ctor]
+fn projects_setup() {
+    utils::test_setup();
+}
 
 // Create a test pool and a project
 async fn setup_test_project() -> (PgPool, Project) {
@@ -23,8 +29,6 @@ async fn setup_test_project() -> (PgPool, Project) {
 
 #[tokio::test]
 async fn test_project_create() -> Result<(), sqlx::Error> {
-    let _ = crate::common::SETUP;
-
     // Create a test pool and a project
     let (pool, project) = setup_test_project().await;
 
@@ -55,8 +59,6 @@ async fn test_project_create() -> Result<(), sqlx::Error> {
 
 #[tokio::test]
 async fn test_project_delete() -> Result<(), sqlx::Error> {
-    let _ = crate::common::SETUP;
-
     // Create a test pool and a project
     let (pool, project) = setup_test_project().await;
 

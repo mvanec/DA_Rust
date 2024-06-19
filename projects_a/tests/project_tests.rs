@@ -4,9 +4,16 @@ use crate::common::create_test_pool;
 use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
+use ctor::ctor;
 
 use projects::models::project::Project;
 use projects::traits::model_trait::ModelTrait;
+
+#[ctor]
+fn setup() {
+    eprintln!("******************************************************");
+    common::test_setup();
+}
 
 // Create a test pool and a project
 async fn setup_test_project() -> (PgPool, Project) {
