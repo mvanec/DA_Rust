@@ -1,24 +1,20 @@
-// tests/integration/task_test.rs
+use ctor::ctor;
 use log::{error, info};
 use sqlx::PgPool;
 use sqlx::Row;
+use std::env;
 use tokio;
 
 use projects::models::task::Task;
 use projects::traits::model_trait::ModelTrait;
 
-mod test_helpers;
-//use crate::test_helpers::*;
-
 // Create a test pool and a task
 async fn setup_test_task() -> (PgPool, Task) {
-    let pool = test_helpers::create_test_pool().await.unwrap();
-    let project = test_helpers::setup_test_project().await.unwrap();
-    project.create(&pool).await.unwrap();
-
+    let pool = create_test_pool().await.unwrap();
+    let project_id = uuid::Uuid::new_v4();
     let task = Task::new(
         uuid::Uuid::new_v4(),
-        project.project_id,
+        project_id,
         "Test Task".to_string(),
     );
     (pool, task)
