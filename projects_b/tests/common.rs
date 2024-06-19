@@ -1,11 +1,15 @@
-// tests/test_helpers.rs
+// tests/common.rs
 use ctor::ctor;
 use log::{error, info};
 use sqlx::PgPool;
 use std::env;
 use tokio;
 
-use projects::models::project::Project;
+pub async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = PgPool::connect(&database_url).await?;
+    Ok(pool)
+}
 
 #[ctor]
 fn test_setup() {
@@ -70,14 +74,14 @@ fn test_setup() {
                 // Create the tables
                 match sqlx::query(
                     "CREATE TABLE Projects (
-                    ProjectId UUID PRIMARY KEY,
-                    ProjectName VARCHAR(100) NOT NULL,
-                    ProjectStartDate DATE NOT NULL,
-                    ProjectEndDate DATE NOT NULL,
-                    PayRate DECIMAL(10, 2) NOT NULL,
-                    ProjectTotalDuration TIME NOT NULL DEFAULT '00:00:00',
-                    ProjectTotalPay DECIMAL(10, 2) NOT NULL DEFAULT '0.00'
-                )",
+                        ProjectId UUID PRIMARY KEY,
+                        ProjectName VARCHAR(100) NOT NULL,
+                        ProjectStartDate DATE NOT NULL,
+                        ProjectEndDate DATE NOT NULL,
+                        PayRate DECIMAL(10, 2) NOT NULL,
+                        ProjectTotalDuration TIME NOT NULL DEFAULT '00:00:00',
+                        ProjectTotalPay DECIMAL(10, 2) NOT NULL DEFAULT '0.00'
+                    )",
                 )
                 .execute(&mut *tx)
                 .await
@@ -91,12 +95,12 @@ fn test_setup() {
 
                 match sqlx::query(
                     "CREATE TABLE ProjectTasks (
-                    TaskId UUID PRIMARY KEY,
-                    ProjectId UUID NOT NULL,
-                    TaskName VARCHAR(100) NOT NULL,
-                    TaskTotalDuration TIME NOT NULL DEFAULT '00:00:00',
-                    FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId) ON DELETE CASCADE
-                )",
+                        TaskId UUID PRIMARY KEY,
+                        ProjectId UUID NOT NULL,
+                        TaskName VARCHAR(100) NOT NULL,
+                        TaskTotalDuration TIME NOT NULL DEFAULT '00:00:00',
+                        FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId) ON DELETE CASCADE
+                    )",
                 )
                 .execute(&mut *tx)
                 .await
@@ -110,13 +114,13 @@ fn test_setup() {
 
                 match sqlx::query(
                     "CREATE TABLE TaskTimings (
-                    TimingId SERIAL UNIQUE NOT NULL,
-                    TaskId UUID NOT NULL,
-                    StartTimestamp TIMESTAMP NOT NULL,
-                    EndTimestamp TIMESTAMP NOT NULL,
-                    PRIMARY KEY (TimingId),
-                    FOREIGN KEY (TaskId) REFERENCES ProjectTasks(TaskId) ON DELETE CASCADE
-                )",
+                        TimingId SERIAL UNIQUE NOT NULL,
+                        TaskId UUID NOT NULL,
+                        StartTimestamp TIMESTAMP NOT NULL,
+                        EndTimestamp TIMESTAMP NOT NULL,
+                        PRIMARY KEY (TimingId),
+                        FOREIGN KEY (TaskId) REFERENCES ProjectTasks(TaskId) ON DELETE CASCADE
+                    )",
                 )
                 .execute(&mut *tx)
                 .await
@@ -142,21 +146,4 @@ fn test_setup() {
             }
         }
     });
-}
-
-pub async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPool::connect(&database_url).await?;
-    Ok(pool)
-}
-
-pub async fn setup_test_project() -> Result<Project, sqlx::Error> {
-    let project = Project::new(
-        uuid::Uuid::new_v4(),
-        "Test Project".to_string(),
-        chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
-        chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
-        100.0,
-    );
-    Ok(project)
 }

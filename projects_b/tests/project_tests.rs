@@ -1,4 +1,3 @@
-use log::{error, info};
 use sqlx::PgPool;
 use sqlx::Row;
 use tokio;

@@ -1,12 +1,12 @@
-use ctor::ctor;
-use log::{error, info};
 use sqlx::PgPool;
 use sqlx::Row;
-use std::env;
 use tokio;
 
 use projects::models::task::Task;
 use projects::traits::model_trait::ModelTrait;
+
+mod common;
+use crate::common::create_test_pool;
 
 // Create a test pool and a task
 async fn setup_test_task() -> (PgPool, Task) {
