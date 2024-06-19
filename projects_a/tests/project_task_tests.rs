@@ -7,12 +7,12 @@ use projects::models::project::Project;
 use projects::models::task::Task;
 use projects::traits::model_trait::ModelTrait;
 
-mod common;
-use crate::common::create_test_pool;
+mod utils;
+use crate::utils::create_test_pool;
 
 #[ctor]
 fn setup() {
-    common::test_setup();
+    utils::test_setup();
 }
 
 // Create a test pool and a task
