@@ -2,8 +2,8 @@ mod models;
 mod traits;
 
 use dotenv::dotenv;
-use std::env;
 use sqlx::PgPool;
+use std::env;
 
 use traits::model_trait::load_from_csv;
 
@@ -58,9 +58,9 @@ async fn main() -> Result<(), sqlx::Error> {
     load_from_csv(&timings_csv, &pool, |record| {
         let project_id = uuid::Uuid::parse_str(&record[1])
             .expect(&format!("Failed to parse project ID for record: {:?}", record));
-        let start_time = chrono::NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S")
+        let start_time = chrono::NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S%.f")
             .expect(&format!("Failed to parse start time for record: {:?}", record));
-        let end_time = chrono::NaiveDateTime::parse_from_str(&record[3], "%Y-%m-%d %H:%M:%S")
+        let end_time = chrono::NaiveDateTime::parse_from_str(&record[3], "%Y-%m-%d %H:%M:%S%.f")
             .expect(&format!("Failed to parse end time for record: {:?}", record));
 
         models::timing::Timing::new(project_id, start_time, end_time)
