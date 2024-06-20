@@ -7,6 +7,13 @@ use std::env;
 
 use traits::model_trait::load_from_csv;
 
+
+fn handle_error(e: impl std::fmt::Display) -> ! {
+    eprintln!("Error:");
+    eprintln!("{}", e);
+    std::process::exit(1);
+}
+
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
     dotenv().ok();
@@ -37,7 +44,7 @@ async fn main() -> Result<(), sqlx::Error> {
         models::project::Project::new(id, name, start_date, end_date, cost, stage, phase)
     })
     .await
-    .expect("Failed to load projects from CSV");
+    .unwrap_or_else(|err| { handle_error(err);});
 
     // Load tasks from CSV
     load_from_csv(&tasks_csv, &pool, |record| {
