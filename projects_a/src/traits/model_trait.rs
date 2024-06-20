@@ -31,7 +31,7 @@ impl fmt::Display for DatabaseError {
                 writeln!(f, "}}")?;
             }
             _ => {
-            writeln!(f, "{:?}", self.error)?;
+                writeln!(f, "{:?}", self.error)?;
             }
         }
         Ok(())

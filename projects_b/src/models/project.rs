@@ -96,7 +96,7 @@ mod tests {
             pay_rate,
             project_duration,
             project_total_pay
-        );
+       );
 
         assert_eq!(project.project_id, project_id);
         assert_eq!(project.project_name, project_name);

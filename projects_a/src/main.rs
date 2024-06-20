@@ -8,10 +8,8 @@ use std::env;
 use traits::model_trait::load_from_csv;
 
 
-fn handle_error(e: impl std::fmt::Display) -> ! {
-    eprintln!("Error:");
-    eprintln!("{}", e);
-    std::process::exit(1);
+fn handle_error(e: impl std::fmt::Display) {
+    panic!("Error: {}", e.to_string());
 }
 
 #[tokio::main]
@@ -44,7 +42,7 @@ async fn main() -> Result<(), sqlx::Error> {
         models::project::Project::new(id, name, start_date, end_date, cost, stage, phase)
     })
     .await
-    .unwrap_or_else(|err| { handle_error(err);});
+    .unwrap_or_else(handle_error);
 
     // Load tasks from CSV
     load_from_csv(&tasks_csv, &pool, |record| {
@@ -59,7 +57,7 @@ async fn main() -> Result<(), sqlx::Error> {
         models::task::Task::new(id, project_id, name, cost)
     })
     .await
-    .expect("Failed to load tasks from CSV");
+    .unwrap_or_else(handle_error);
 
     // Load timings from CSV
     load_from_csv(&timings_csv, &pool, |record| {
@@ -73,7 +71,7 @@ async fn main() -> Result<(), sqlx::Error> {
         models::timing::Timing::new(project_id, start_time, end_time)
     })
     .await
-    .expect("Failed to load timings from CSV");
+    .unwrap_or_else(handle_error);
 
     Ok(())
 }
