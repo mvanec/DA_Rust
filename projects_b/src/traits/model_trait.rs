@@ -61,7 +61,7 @@ where
     T: ModelTrait + Send + 'static,
 {
     let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(false)
+        .has_headers(true)
         .from_path(path)?;
     for result in rdr.records() {
         let record = result?;
