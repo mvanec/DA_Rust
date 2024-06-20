@@ -2,8 +2,8 @@ mod models;
 mod traits;
 
 use dotenv::dotenv;
-use std::env;
 use sqlx::PgPool;
+use std::env;
 
 use traits::model_trait::load_from_csv;
 
@@ -21,18 +21,18 @@ async fn main() -> Result<(), sqlx::Error> {
     // Load projects from CSV
     load_from_csv(&projects_csv, &pool, |record| {
         let id = uuid::Uuid::parse_str(&record[0])
-            .expect("Failed to parse project ID");
+            .expect(&format!("Failed to parse project ID for record: {:?}", record));
         let name = record[1].clone();
         let start_date = chrono::NaiveDate::parse_from_str(&record[2], "%Y-%m-%d")
-            .expect("Failed to parse project start date");
+            .expect(&format!("Failed to parse project start date for record: {:?}", record));
         let end_date = chrono::NaiveDate::parse_from_str(&record[3], "%Y-%m-%d")
-            .expect("Failed to parse project end date");
+            .expect(&format!("Failed to parse project end date for record: {:?}", record));
         let cost = record[4].parse()
-            .expect("Failed to parse project cost");
+            .expect(&format!("Failed to parse project cost for record: {:?}", record));
         let stage = record[5].parse()
-            .expect("Failed to parse project stage");
+            .expect(&format!("Failed to parse project stage for record: {:?}", record));
         let phase = record[6].parse()
-            .expect("Failed to parse project phase");
+            .expect(&format!("Failed to parse project phase for record: {:?}", record));
 
         models::project::Project::new(id, name, start_date, end_date, cost, stage, phase)
     })
@@ -41,26 +41,32 @@ async fn main() -> Result<(), sqlx::Error> {
 
     // Load tasks from CSV
     load_from_csv(&tasks_csv, &pool, |record| {
-        models::task::Task::new(
-            uuid::Uuid::parse_str(&record[0]).unwrap(),
-            uuid::Uuid::parse_str(&record[1]).unwrap(),
-            record[2].clone(),
-            record[3].parse().unwrap()
-        )
+        let id = uuid::Uuid::parse_str(&record[0])
+            .expect(&format!("Failed to parse task ID for record: {:?}", record));
+        let project_id = uuid::Uuid::parse_str(&record[1])
+            .expect(&format!("Failed to parse project ID for record: {:?}", record));
+        let name = record[2].clone();
+        let cost = record[3].parse()
+            .expect(&format!("Failed to parse task cost for record: {:?}", record));
+
+        models::task::Task::new(id, project_id, name, cost)
     })
     .await
-    .unwrap();
+    .expect("Failed to load tasks from CSV");
 
     // Load timings from CSV
     load_from_csv(&timings_csv, &pool, |record| {
-        models::timing::Timing::new(
-            uuid::Uuid::parse_str(&record[1]).unwrap(),
-            chrono::NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S").unwrap(),
-            chrono::NaiveDateTime::parse_from_str(&record[3], "%Y-%m-%d %H:%M:%S").unwrap(),
-        )
+        let project_id = uuid::Uuid::parse_str(&record[1])
+            .expect(&format!("Failed to parse project ID for record: {:?}", record));
+        let start_time = chrono::NaiveDateTime::parse_from_str(&record[2], "%Y-%m-%d %H:%M:%S")
+            .expect(&format!("Failed to parse start time for record: {:?}", record));
+        let end_time = chrono::NaiveDateTime::parse_from_str(&record[3], "%Y-%m-%d %H:%M:%S")
+            .expect(&format!("Failed to parse end time for record: {:?}", record));
+
+        models::timing::Timing::new(project_id, start_time, end_time)
     })
     .await
-    .unwrap();
+    .expect("Failed to load timings from CSV");
 
     Ok(())
 }
