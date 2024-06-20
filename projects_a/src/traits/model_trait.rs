@@ -21,55 +21,17 @@ impl DatabaseError {
     }
 }
 
-// Implement Display trait for DatabaseError
 impl fmt::Display for DatabaseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.error {
             sqlx::Error::Database(e) => {
-                writeln!(f, "Database(PgDatabaseError {{")?;
-                writeln!(f, "    severity: {},", e.severity())?;
-                writeln!(f, "    code: {},", e.code())?;
-                writeln!(f, "    message: {},", e.message())?;
-                if let Some(detail) = e.detail() {
-                    writeln!(f, "    detail: Some({}),", detail)?;
-                }
-                if let Some(hint) = e.hint() {
-                    writeln!(f, "    hint: Some({}),", hint)?;
-                }
-                if let Some(position) = e.position() {
-                    writeln!(f, "    position: Some({}),", position)?;
-                }
-                if let Some(where_) = e.where_() {
-                    writeln!(f, "    where: Some({}),", where_)?;
-                }
-                if let Some(schema) = e.schema() {
-                    writeln!(f, "    schema: Some({}),", schema)?;
-                }
-                if let Some(table) = e.table() {
-                    writeln!(f, "    table: Some({}),", table)?;
-                }
-                if let Some(column) = e.column() {
-                    writeln!(f, "    column: Some({}),", column)?;
-                }
-                if let Some(data_type) = e.data_type() {
-                    writeln!(f, "    data_type: Some({}),", data_type)?;
-                }
-                if let Some(constraint) = e.constraint() {
-                    writeln!(f, "    constraint: Some({}),", constraint)?;
-                }
-                if let Some(file) = e.file() {
-                    writeln!(f, "    file: Some({}),", file)?;
-                }
-                if let Some(line) = e.line() {
-                    writeln!(f, "    line: Some({}),", line)?;
-                }
-                if let Some(routine) = e.routine() {
-                    writeln!(f, "    routine: Some({}),", routine)?;
-                }
-                writeln!(f, "}})")?;
+                writeln!(f, "Database Error {{")?;
+                writeln!(f, "    message: {}", e.as_ref().message())?;
+                writeln!(f, "    code: {:?}", e.as_ref().code())?;
+                writeln!(f, "}}")?;
             }
             _ => {
-                writeln!(f, "{:?}", self.error)?;
+            writeln!(f, "{:?}", self.error)?;
             }
         }
         Ok(())
