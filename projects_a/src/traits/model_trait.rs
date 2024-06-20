@@ -1,7 +1,6 @@
 use async_trait::async_trait;
-use sqlx::PgPool;
-use std::io;
-use std::error::Error;
+use sqlx::{error::DatabaseError, PgPool};
+use std::{fmt, io};
 
 #[async_trait(?Send)]
 pub trait ModelTrait {
@@ -23,9 +22,24 @@ where
         let record: Vec<String> = record.into_iter().map(|s| s.to_string()).collect();
         let model = f(record);
         model.create(pool).await.map_err(|e| {
-            let error_message = format!("Error creating model: {}\nCaused by: {}", e, e.source().unwrap_or(&e));
+            let error_message = format!("{}", e);
             io::Error::new(io::ErrorKind::Other, error_message)
         })?;
     }
     Ok(())
+}
+
+// Implement Display trait for sqlx::Error
+impl fmt::Display for sqlx::Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            sqlx::Error::Database(e) => {
+                writeln!(f, "Database({:?})", e)?;
+            }
+            _ => {
+                writeln!(f, "{:?}", self)?;
+            }
+        }
+        Ok(())
+    }
 }
