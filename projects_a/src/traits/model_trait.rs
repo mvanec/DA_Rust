@@ -21,7 +21,10 @@ where
         let record = result?;
         let record: Vec<String> = record.into_iter().map(|s| s.to_string()).collect();
         let model = f(record);
-        model.create(pool).await.unwrap();
+        model.create(pool).await.map_err(|e| {
+            eprintln!("Error creating model: {}", e);
+            io::Error::new(io::ErrorKind::Other, "Failed to create model")
+        })?;
     }
     Ok(())
 }
