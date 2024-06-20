@@ -9,16 +9,16 @@ pub struct Task {
     pub task_id: Uuid,
     pub project_id: Uuid,
     pub task_name: String,
-    pub task_total_duration: String,
+    pub task_duration: i32,
 }
 
 impl Task {
-    pub fn new(task_id: Uuid, project_id: Uuid, task_name: String) -> Self {
+    pub fn new(task_id: Uuid, project_id: Uuid, task_name: String, task_duration: i32) -> Self {
         Self {
             task_id,
             project_id,
             task_name,
-            task_total_duration: "00:00:00".to_string(),
+            task_duration
         }
     }
 }
@@ -27,12 +27,13 @@ impl Task {
 impl ModelTrait for Task {
     async fn create(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
         sqlx::query(
-            "INSERT INTO ProjectTasks (TaskId, ProjectId, TaskName)
-             VALUES ($1, $2, $3)",
+            "INSERT INTO ProjectTasks (TaskId, ProjectId, TaskName, TaskDuration)
+             VALUES ($1, $2, $3, $4)",
         )
         .bind(&self.task_id)
         .bind(&self.project_id)
         .bind(&self.task_name)
+        .bind(&self.task_duration)
         .execute(pool)
         .await?;
         Ok(())

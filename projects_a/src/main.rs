@@ -26,6 +26,8 @@ async fn main() -> Result<(), sqlx::Error> {
             chrono::NaiveDate::parse_from_str(&record[2], "%Y-%m-%d").unwrap(),
             chrono::NaiveDate::parse_from_str(&record[3], "%Y-%m-%d").unwrap(),
             record[4].parse().unwrap(),
+            record[5].parse().unwrap(),
+            record[6].parse().unwrap()
         )
     })
     .await
@@ -37,6 +39,7 @@ async fn main() -> Result<(), sqlx::Error> {
             uuid::Uuid::parse_str(&record[0]).unwrap(),
             uuid::Uuid::parse_str(&record[1]).unwrap(),
             record[2].clone(),
+            record[3].parse().unwrap()
         )
     })
     .await

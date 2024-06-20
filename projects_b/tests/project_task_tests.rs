@@ -23,7 +23,9 @@ async fn setup_test_task(pool: &PgPool) -> (Project, Task) {
         "Test Project".to_string(),
         chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
         chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
-        100.0,
+        40.0,
+        3600000,
+        310.56
     );
     project.create(pool).await.unwrap();
 
@@ -32,6 +34,7 @@ async fn setup_test_task(pool: &PgPool) -> (Project, Task) {
         uuid::Uuid::new_v4(),
         project.project_id,
         "Test Task".to_string(),
+        36000
     );
     task.create(pool).await.unwrap();
 
@@ -56,12 +59,12 @@ async fn test_task_create() -> Result<(), sqlx::Error> {
     let task_id: uuid::Uuid = retrieved_task.get("taskid");
     let project_id: uuid::Uuid = retrieved_task.get("projectid");
     let task_name: String = retrieved_task.get("taskname");
-    let task_total_duration: String = retrieved_task.get("tasktotalduration");
+    let task_total_duration: i32 = retrieved_task.get("taskduration");
 
     assert_eq!(task_id, task.task_id);
     assert_eq!(project_id, task.project_id);
     assert_eq!(task_name, task.task_name);
-    assert_eq!(task_total_duration, task.task_total_duration);
+    assert_eq!(task_total_duration, task.task_duration);
 
     Ok(())
 }

@@ -11,6 +11,7 @@ pub async fn create_test_pool() -> Result<PgPool, sqlx::Error> {
     Ok(pool)
 }
 
+// #[ctor]
 pub fn test_setup() {
     dotenv::from_filename(".env.test").ok();
     std::env::set_var(
@@ -78,8 +79,8 @@ pub fn test_setup() {
                         ProjectStartDate DATE NOT NULL,
                         ProjectEndDate DATE NOT NULL,
                         PayRate DECIMAL(10, 2) NOT NULL,
-                        ProjectTotalDuration TIME NOT NULL DEFAULT '00:00:00',
-                        ProjectTotalPay DECIMAL(10, 2) NOT NULL DEFAULT '0.00'
+                        ProjectDuration INTEGER DEFAULT 0,
+                        ProjectTotalPay DECIMAL(10, 2) NOT NULL DEFAULT 0.00
                     )",
                 )
                 .execute(&mut *tx)
@@ -97,7 +98,7 @@ pub fn test_setup() {
                         TaskId UUID PRIMARY KEY,
                         ProjectId UUID NOT NULL,
                         TaskName VARCHAR(100) NOT NULL,
-                        TaskTotalDuration TIME NOT NULL DEFAULT '00:00:00',
+                        TaskDuration INTEGER DEFAULT 0,
                         FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId) ON DELETE CASCADE
                     )",
                 )

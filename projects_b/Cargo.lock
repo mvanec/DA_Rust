@@ -1533,7 +1533,6 @@ dependencies = [
  "dotenv",
  "env_logger",
  "log",
- "once_cell",
  "sqlx",
  "tokio",
  "uuid",

@@ -19,7 +19,6 @@ where
         .from_path(path)?;
     for result in rdr.records() {
         let record = result?;
-        eprintln!("{:?}", &record);
         let record: Vec<String> = record.into_iter().map(|s| s.to_string()).collect();
         let model = f(record);
         model.create(pool).await.unwrap();

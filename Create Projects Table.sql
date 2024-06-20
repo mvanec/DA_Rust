@@ -5,7 +5,7 @@ CREATE TABLE Projects (
     ProjectStartDate DATE NOT NULL,
     ProjectEndDate DATE NOT NULL,
     PayRate DECIMAL(10, 2) NOT NULL,
-    ProjectTotalDuration TIME NOT NULL DEFAULT '00:00:00',
+    ProjectTotalDuration INTEGER DEFAULT 0,
     ProjectTotalPay DECIMAL(10, 2) NOT NULL DEFAULT '0.00'
 );
 -- Create Tasks Table
@@ -13,9 +13,10 @@ CREATE TABLE ProjectTasks (
     TaskId UUID PRIMARY KEY,
     ProjectId UUID NOT NULL,
     TaskName VARCHAR(100) NOT NULL,
-    TaskTotalDuration TIME NOT NULL DEFAULT '00:00:00',
+    TaskTotalDuration INTEGER DEFAULT 0,
     FOREIGN KEY (ProjectId) REFERENCES Projects(ProjectId) ON DELETE CASCADE
 );
+COMMENT ON column ProjectTasks.TaskTotalDuration IS 'The duration in milliseconds'
 -- Create TaskTimings Table
 CREATE TABLE TaskTimings (
     TimingId SERIAL UNIQUE NOT NULL,

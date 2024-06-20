@@ -5,13 +5,13 @@ use sqlx::PgPool;
 use sqlx::Row;
 use tokio;
 use ctor::ctor;
+use rust_decimal::prelude::ToPrimitive;
 
 use projects::models::project::Project;
 use projects::traits::model_trait::ModelTrait;
 
 #[ctor]
-fn setup() {
-    eprintln!("******************************************************");
+fn projects_setup() {
     utils::test_setup();
 }
 
@@ -21,9 +21,11 @@ async fn setup_test_project() -> (PgPool, Project) {
     let project = Project::new(
         uuid::Uuid::new_v4(),
         "Test Project".to_string(),
-        chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
-        chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
-        100.0,
+        chrono::NaiveDate::parse_from_str(&String::from("2024-06-24"), "%Y-%m-%d").unwrap(),
+        chrono::NaiveDate::parse_from_str(&String::from("2024-06-25"), "%Y-%m-%d").unwrap(),
+        42.50,
+        3600000,
+        310.56
     );
     (pool, project)
 }
@@ -47,7 +49,8 @@ async fn test_project_create() -> Result<(), sqlx::Error> {
     let project_name: String = retrieved_project.get("projectname");
     let project_start_date: chrono::NaiveDate = retrieved_project.get("projectstartdate");
     let project_end_date: chrono::NaiveDate = retrieved_project.get("projectenddate");
-    let pay_rate: f64 = retrieved_project.get("payrate");
+    let pay_decimal: rust_decimal::Decimal = retrieved_project.get("payrate");
+    let pay_rate: f64 = pay_decimal.to_f64().unwrap();
 
     assert_eq!(project_id, project.project_id);
     assert_eq!(project_name, project.project_name);

@@ -20,9 +20,11 @@ async fn setup_test_project() -> (PgPool, Project) {
     let project = Project::new(
         uuid::Uuid::new_v4(),
         "Test Project".to_string(),
-        chrono::NaiveDate::from_ymd_opt(2022, 1, 1).unwrap(),
-        chrono::NaiveDate::from_ymd_opt(2022, 12, 31).unwrap(),
-        100.0,
+        chrono::NaiveDate::parse_from_str(&String::from("2024-06-24"), "%Y-%m-%d").unwrap(),
+        chrono::NaiveDate::parse_from_str(&String::from("2024-06-25"), "%Y-%m-%d").unwrap(),
+        42.50,
+        3600000,
+        310.56
     );
     (pool, project)
 }
