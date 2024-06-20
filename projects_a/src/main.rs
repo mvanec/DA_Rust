@@ -20,18 +20,24 @@ async fn main() -> Result<(), sqlx::Error> {
 
     // Load projects from CSV
     load_from_csv(&projects_csv, &pool, |record| {
-        models::project::Project::new(
-            uuid::Uuid::parse_str(&record[0]).unwrap(),
-            record[1].clone(),
-            chrono::NaiveDate::parse_from_str(&record[2], "%Y-%m-%d").unwrap(),
-            chrono::NaiveDate::parse_from_str(&record[3], "%Y-%m-%d").unwrap(),
-            record[4].parse().unwrap(),
-            record[5].parse().unwrap(),
-            record[6].parse().unwrap()
-        )
+        let id = uuid::Uuid::parse_str(&record[0])
+            .expect("Failed to parse project ID");
+        let name = record[1].clone();
+        let start_date = chrono::NaiveDate::parse_from_str(&record[2], "%Y-%m-%d")
+            .expect("Failed to parse project start date");
+        let end_date = chrono::NaiveDate::parse_from_str(&record[3], "%Y-%m-%d")
+            .expect("Failed to parse project end date");
+        let cost = record[4].parse()
+            .expect("Failed to parse project cost");
+        let stage = record[5].parse()
+            .expect("Failed to parse project stage");
+        let phase = record[6].parse()
+            .expect("Failed to parse project phase");
+
+        models::project::Project::new(id, name, start_date, end_date, cost, stage, phase)
     })
     .await
-    .unwrap();
+    .expect("Failed to load projects from CSV");
 
     // Load tasks from CSV
     load_from_csv(&tasks_csv, &pool, |record| {
