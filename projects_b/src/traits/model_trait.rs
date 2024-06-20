@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use sqlx::PgPool;
+use sqlx::{postgres::PgDatabaseError, PgPool};
 use std::{fmt, io};
 
 #[async_trait(?Send)]
@@ -26,8 +26,24 @@ impl fmt::Display for DatabaseError {
         match &self.error {
             sqlx::Error::Database(e) => {
                 writeln!(f, "Database Error {{")?;
-                writeln!(f, "    message: {}", e.as_ref().message())?;
-                writeln!(f, "    code: {:?}", e.as_ref().code())?;
+                writeln!(f, "    Code       : {:?}", e.as_ref().code())?;
+                writeln!(f, "    Kind       : {:?}", e.as_ref().kind())?;
+                writeln!(f, "    Message    : {}", e.as_ref().message())?;
+                writeln!(f, "    Table      : {:?}", e.as_ref().table())?;
+                writeln!(f, "    Constraint : {:?}", e.as_ref().constraint())?;
+                writeln!(f, "    Unique Viol: {}", e.as_ref().is_unique_violation())?;
+                writeln!(f, "    FK Viol.   : {}", e.as_ref().is_foreign_key_violation())?;
+                writeln!(f, "    Check Viol : {}", e.as_ref().is_check_violation())?;
+
+                let pgopt: Option<&PgDatabaseError> = e.try_downcast_ref::<PgDatabaseError>();
+                match pgopt {
+                    Some(pgerr) => {
+                        writeln!(f, "    Details    : {:?}", pgerr.detail())?;
+                        writeln!(f, "    Hint       : {:?}", pgerr.hint())?;
+                        writeln!(f, "    Column     : {:?}", pgerr.column())?;
+                    },
+                    None => eprintln!("Found unknown error type"),
+                }
                 writeln!(f, "}}")?;
             }
             _ => {
