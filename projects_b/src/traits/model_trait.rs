@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use sqlx::PgPool;
 use std::io;
+use std::error::Error;
 
 #[async_trait(?Send)]
 pub trait ModelTrait {
@@ -22,8 +23,8 @@ where
         let record: Vec<String> = record.into_iter().map(|s| s.to_string()).collect();
         let model = f(record);
         model.create(pool).await.map_err(|e| {
-            eprintln!("Error creating model: {}", e);
-            io::Error::new(io::ErrorKind::Other, "Failed to create model")
+            let error_message = format!("Error creating model: {}\nCaused by: {}", e, e.source().unwrap_or(&e));
+            io::Error::new(io::ErrorKind::Other, error_message)
         })?;
     }
     Ok(())
