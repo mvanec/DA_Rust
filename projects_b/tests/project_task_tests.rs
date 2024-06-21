@@ -59,12 +59,12 @@ async fn test_task_create() -> Result<(), sqlx::Error> {
     let task_id: uuid::Uuid = retrieved_task.get("taskid");
     let project_id: uuid::Uuid = retrieved_task.get("projectid");
     let task_name: String = retrieved_task.get("taskname");
-    let task_total_duration: i32 = retrieved_task.get("taskduration");
+    let task_duration: i32 = retrieved_task.get("taskduration");
 
     assert_eq!(task_id, task.task_id);
     assert_eq!(project_id, task.project_id);
     assert_eq!(task_name, task.task_name);
-    assert_eq!(task_total_duration, task.task_duration);
+    assert_eq!(task_duration, task.task_duration);
 
     Ok(())
 }

@@ -28,7 +28,7 @@ impl Timing {
 impl ModelTrait for Timing {
     async fn create(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
         sqlx::query(
-            "INSERT INTO TaskTimings (TaskId, StartTimestamp, EndTimestamp)
+            "INSERT INTO TaskTimes (TaskId, StartTimestamp, EndTimestamp)
              VALUES ($1, $2, $3)",
         )
         .bind(&self.task_id)
@@ -40,7 +40,7 @@ impl ModelTrait for Timing {
     }
 
     async fn delete(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
-        sqlx::query("DELETE FROM TaskTimings WHERE TimingId = $1")
+        sqlx::query("DELETE FROM TaskTimes WHERE TimingId = $1")
             .bind(&self.timing_id)
             .execute(pool)
             .await?;

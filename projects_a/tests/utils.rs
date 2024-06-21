@@ -38,14 +38,14 @@ pub fn test_setup() {
                 };
 
                 // Drop the database if it exists
-                match sqlx::query("DROP TABLE IF EXISTS TaskTimings")
+                match sqlx::query("DROP TABLE IF EXISTS TaskTimes")
                     .execute(&mut *tx)
                     .await
                 {
-                    Ok(_) => info!("Dropped TaskTimings table"),
+                    Ok(_) => info!("Dropped TaskTimes table"),
                     Err(e) => {
-                        error!("Failed to drop TaskTimings table: {}", e);
-                        panic!("Failed to drop TaskTimings table");
+                        error!("Failed to drop TaskTimes table: {}", e);
+                        panic!("Failed to drop TaskTimes table");
                     }
                 }
 
@@ -113,7 +113,7 @@ pub fn test_setup() {
                 }
 
                 match sqlx::query(
-                    "CREATE TABLE TaskTimings (
+                    "CREATE TABLE TaskTimes (
                         TimingId SERIAL UNIQUE NOT NULL,
                         TaskId UUID NOT NULL,
                         StartTimestamp TIMESTAMP NOT NULL,
@@ -125,10 +125,10 @@ pub fn test_setup() {
                 .execute(&mut *tx)
                 .await
                 {
-                    Ok(_) => info!("Created TaskTimings table"),
+                    Ok(_) => info!("Created TaskTimes table"),
                     Err(e) => {
-                        error!("Failed to create TaskTimings table: {}", e);
-                        panic!("Failed to create TaskTimings table");
+                        error!("Failed to create TaskTimes table: {}", e);
+                        panic!("Failed to create TaskTimes table");
                     }
                 }
 

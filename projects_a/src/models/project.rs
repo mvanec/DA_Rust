@@ -41,7 +41,7 @@ impl Project {
 
 impl Display for Project {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Project ID: {}\nProject Name: {}\nProject Start Date: {}\nProject End Date: {}\nPay Rate: ${:.2}\nProject Total Duration: {}\nProject Total Pay: ${:.2}",
+        write!(f, "Project ID: {}\nProject Name: {}\nProject Start Date: {}\nProject End Date: {}\nPay Rate: ${:.2}\nProject Duration: {}\nProject Total Pay: ${:.2}",
             self.project_id, self.project_name, self.project_start_date, self.project_end_date, self.pay_rate, self.project_duration, self.project_total_pay)
     }
 }
