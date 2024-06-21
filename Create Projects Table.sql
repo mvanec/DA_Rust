@@ -19,7 +19,7 @@ CREATE TABLE ProjectTasks (
 );
 COMMENT ON column ProjectTasks.TaskDuration IS 'The duration in milliseconds';
 -- Create TaskTimings Table
-CREATE TABLE TaskTimings (
+CREATE TABLE TaskTimes (
     TimingId SERIAL UNIQUE NOT NULL,
     TaskId UUID NOT NULL,
     StartTimestamp TIMESTAMP NOT NULL,
