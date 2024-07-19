@@ -1,0 +1,5 @@
+[workspace]
+resolver = "2"
+
+members = ["crash_reporter_a"
+, "crash_reporter_b", "sqlserver_b", "tiberius_sqlserver"]

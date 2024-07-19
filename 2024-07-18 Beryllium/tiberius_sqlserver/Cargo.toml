@@ -1,0 +1,15 @@
+[package]
+name = "tiberius_sqlserver"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.tiberius]
+version = "0.12.2"
+features = ["sql-browser-async-std", "chrono", "rust_decimal"]
+
+[dependencies]
+async-std = {version="1.10.0", features = ["attributes"]}
+once_cell = "1.17.1"
+anyhow = "1.0.0"
+futures-util = "0.3"
+chrono = "0.4.26"

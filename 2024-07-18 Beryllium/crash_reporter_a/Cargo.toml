@@ -1,0 +1,9 @@
+[package]
+name = "crash_reporter_a"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+imgui = "0.12.0"
+imgui-winit-support = "0.12.0"
+winit = "0.30.4"
