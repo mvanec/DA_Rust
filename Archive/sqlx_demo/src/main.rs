@@ -1,5 +1,4 @@
 use sqlx::postgres::PgPoolOptions;
-use sqlx::Row;
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
