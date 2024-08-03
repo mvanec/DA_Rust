@@ -1,0 +1,21 @@
+I have the below struct in Rust and a couple of others that I need to store in a database. The requirements are:
+
+1. This needs to be a library, and all created code needs to have unit tests.
+2. The database interaction module should manage its connection and inserts/queries.
+3. Errors should be caught and handled or passed to the caller. There should be no panics.
+4. The database module will take a URI or a config struct to initiate the connection.
+5. The database module should have no knowledge of the internals of the data structs.
+6. There should be a separate module that the database module calls to transform the data struct into the appropriate Query object.. This will allow me to add new data structs just by adding the model and the query builder.
+Start out using sqlite3 as the database, but I should be able to replace the database easily, or to add additional versions of the database module for different databases.
+
+Here's my starting data struct:
+
+pub struct Project {
+    pub project_id: Uuid,
+    pub project_name: String,
+    pub project_start_date: NaiveDate,
+    pub project_end_date: NaiveDate,
+    pub pay_rate: f64,
+    pub project_duration: i32,
+    pub project_total_pay: f64
+}
